@@ -1,0 +1,23 @@
+warning: fixtures/parcel-locker/spec/ess-inputs.yaml requires ess 0.48.0 and this is ess 0.52.0, which is newer; continuing (--strict-requires refuses)
+refused: refusal[ESS-SYNTH-003]: outcome parcels.locker.DropParcel/locker-closed has no scenario `parcels.locker.DropParcel/outcome/locker-closed`
+  no candidate of the 2 tried satisfies ``parcels.locker.Locker` stored related row selecting this branch, over the rows 2 bounded arrangements left`
+  help: write the branch's condition over values a candidate can carry, or supply a fixture for it
+refused: refusal[ESS-SYNTH-003]: outcome parcels.locker.DropParcel/locker-shut has no scenario `parcels.locker.DropParcel/outcome/locker-shut`
+  no candidate of the 2 tried satisfies ``parcels.locker.Locker` stored related row selecting this branch, over the rows 2 bounded arrangements left`
+  help: write the branch's condition over values a candidate can carry, or supply a fixture for it
+refused: refusal[ESS-SYNTH-002]: outcome parcels.locker.NoteParcel/nothing-to-note has no scenario `parcels.locker.NoteParcel/outcome/nothing-to-note`
+  `note == ""` cannot be decided against an input of `parcels.locker.NoteParcel`
+    - `note == ""`: `note` is declared, and this candidate supplied nothing for it
+  help: the guard reads something no input can supply; correct the path or the type it walks into
+refused: refusal[ESS-SYNTH-003]: outcome parcels.locker.RushParcel/rush-a has no scenario `parcels.locker.RushParcel/outcome/rush-a`
+  no candidate of the 2 tried satisfies ``parcels.locker.Locker` stored related row selecting this branch, over the rows 2 bounded arrangements left`
+  help: write the branch's condition over values a candidate can carry, or supply a fixture for it
+refused: refusal[ESS-SYNTH-004]: outcome parcels.locker.DepositParcel/already-deposited has no scenario `parcels.locker.DepositParcel/outcome/already-deposited`
+  it needs an instance of `parcels.locker.Parcel` resting in `Stored`, and the route runs through `parcels.locker.DepositParcel/express`, which no input reaches
+  help: the route to this state runs through a branch no input reaches; see that outcome's own refusal
+refused: refusal[ESS-SYNTH-008]: outcome parcels.locker.DepositParcel/bad-recipient has no scenario `parcels.locker.DepositParcel/outcome/bad-recipient`
+  its command's strategy is `arrange_related_row`: a row of another entity the input names selects its branch, and this scenario family arranges none
+  help: the command is selected by a row of another entity its input names (`when_related:`), which this scenario family does not arrange; cover it with an authored scenario (ess-scenario/1)
+note: `parcels.locker.TagParcel` declares no not-found and no `wrong_state` outcome, so what it answers when its `instance:` names no record is undeclared and not checked
+note: no scenario sends `parcels.locker.DiscardParcel` into a branch that accepts it, so `parcels.locker.DiscardParcel/grant/denied` is not synthesized: a refusal of a send the command would have refused anyway shows nothing about the grant
+56 scenario(s) (0 authored), 6 refusal(s), written to fixtures/parcel-locker/suite.json

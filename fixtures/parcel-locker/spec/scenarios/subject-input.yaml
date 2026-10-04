@@ -1,0 +1,63 @@
+type: ess-scenario/1
+domain: parcels.locker
+scenario: subject-input
+summary: Subject and held-state guards take their branch only when the input guard beside them holds.
+
+arrange:
+  - instance: locker
+    entity: parcels.locker.Locker
+
+timeline:
+  - at: 2026-09-30T12:00:00Z
+    command: parcels.locker.InstallLocker
+    actor: parcels.locker.Courier
+    input: {site: Harbour}
+    outcome: installed
+    capture: {instance: locker, event: parcels.locker.LockerInstalled, field: locker_id}
+
+  - at: 2026-09-30T12:00:01Z
+    command: parcels.locker.ParkParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-90, locker_id: {$instance: locker}, recipient: Ada}
+    outcome: parked
+
+  - at: 2026-09-30T12:00:02Z
+    command: parcels.locker.FlagParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-90, flag: later}
+    outcome: flagged
+
+  - at: 2026-09-30T12:00:03Z
+    command: parcels.locker.FlagParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-90, flag: urgent}
+    outcome: flag-refused
+    error: {name: parcels.locker.FlagRefused, fields: {recipient: Ada, site: Harbour}}
+
+  - at: 2026-09-30T12:00:04Z
+    command: parcels.locker.TagParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-90, urgent: Urgent}
+    outcome: tagged
+
+  - at: 2026-09-30T12:00:05Z
+    command: parcels.locker.TagParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-90, urgent: Normal}
+    outcome: tag-plain
+
+  - at: 2026-09-30T12:00:06Z
+    command: parcels.locker.CollectParcel
+    actor: parcels.locker.Recipient
+    input: {parcel_code: PX-90}
+    outcome: collected
+
+  - at: 2026-09-30T12:00:07Z
+    command: parcels.locker.TagParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-90, urgent: Urgent}
+    outcome: tag-refused
+
+assert:
+  - view: parcels.locker.Parcels
+    contains: {parcel_code: PX-90, note: urgent}

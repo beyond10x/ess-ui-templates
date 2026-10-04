@@ -1,0 +1,19 @@
+format: ess-inputs/2
+requires: ess 0.48.0
+specification:
+  - system.yaml
+  - components.yaml
+  - domains/locker.yaml
+scenarios:
+  - scenarios/deposit-and-collect.yaml
+  - scenarios/refusals.yaml
+  - scenarios/precedence.yaml
+  - scenarios/left-open.yaml
+  - scenarios/minted-code.yaml
+  - scenarios/related-input.yaml
+  - scenarios/two-related.yaml
+  - scenarios/subject-input.yaml
+  - scenarios/adv-absent-flag.yaml
+  - scenarios/adv-taken-closed.yaml
+  - scenarios/adv-two-accepting.yaml
+  - scenarios/adv-absent-stamp.yaml

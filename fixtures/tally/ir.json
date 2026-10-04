@@ -1,0 +1,627 @@
+{
+  "system": "tally",
+  "version": 1,
+  "naming": {},
+  "domains": {
+    "tally.board": {
+      "name": "tally.board",
+      "naming": {
+        "summary": "Counters a team bumps, totals per team, and numbered notes."
+      },
+      "types": [
+        "tally.board.Counter.State",
+        "tally.board.Note.State"
+      ],
+      "entities": [
+        "tally.board.Counter",
+        "tally.board.Note"
+      ],
+      "commands": [
+        "tally.board.BumpCounter",
+        "tally.board.CreateCounter",
+        "tally.board.PinNote"
+      ],
+      "events": [
+        "tally.board.CounterBumped",
+        "tally.board.CounterCreated",
+        "tally.board.NotePinned"
+      ],
+      "errors": [],
+      "views": [
+        "tally.board.Counters",
+        "tally.board.HitsByTeam",
+        "tally.board.Notes"
+      ],
+      "actors": [
+        "tally.board.Member"
+      ]
+    }
+  },
+  "types": {
+    "tally.board.Counter.State": {
+      "name": "tally.board.Counter.State",
+      "body": {
+        "kind": "enum",
+        "variants": [
+          "Open"
+        ]
+      },
+      "naming": {}
+    },
+    "tally.board.Note.State": {
+      "name": "tally.board.Note.State",
+      "body": {
+        "kind": "enum",
+        "variants": [
+          "Pinned"
+        ]
+      },
+      "naming": {}
+    }
+  },
+  "conversions": [],
+  "entities": {
+    "tally.board.Counter": {
+      "name": "tally.board.Counter",
+      "domain": "tally.board",
+      "identity": {
+        "name": "counter_id",
+        "type_ref": {
+          "kind": "primitive",
+          "name": "uuid"
+        },
+        "naming": {}
+      },
+      "fields": [
+        {
+          "name": "label",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "string"
+          },
+          "naming": {}
+        },
+        {
+          "name": "team",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "string"
+          },
+          "naming": {}
+        },
+        {
+          "name": "hits",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "integer"
+          },
+          "naming": {}
+        }
+      ],
+      "state_type": "tally.board.Counter.State",
+      "lifecycle": {
+        "states": [
+          "Open"
+        ],
+        "initial": "Open",
+        "terminal": [
+          "Open"
+        ]
+      },
+      "invariants": [],
+      "naming": {}
+    },
+    "tally.board.Note": {
+      "name": "tally.board.Note",
+      "domain": "tally.board",
+      "identity": {
+        "name": "note_no",
+        "type_ref": {
+          "kind": "primitive",
+          "name": "integer"
+        },
+        "naming": {}
+      },
+      "fields": [
+        {
+          "name": "text",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "string"
+          },
+          "naming": {}
+        }
+      ],
+      "state_type": "tally.board.Note.State",
+      "lifecycle": {
+        "states": [
+          "Pinned"
+        ],
+        "initial": "Pinned",
+        "terminal": [
+          "Pinned"
+        ]
+      },
+      "invariants": [],
+      "naming": {}
+    }
+  },
+  "commands": {
+    "tally.board.BumpCounter": {
+      "name": "tally.board.BumpCounter",
+      "domain": "tally.board",
+      "input": [
+        {
+          "name": "counter_id",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "uuid"
+          },
+          "naming": {}
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "bumped",
+          "condition": {
+            "kind": "otherwise"
+          },
+          "subject": {
+            "entity": "tally.board.Counter",
+            "effect": "updates",
+            "instance": {
+              "from": "supplied",
+              "field": {
+                "name": "counter_id",
+                "type_ref": {
+                  "kind": "primitive",
+                  "name": "uuid"
+                },
+                "naming": {}
+              }
+            }
+          },
+          "test_strategy": "default_branch",
+          "emits": [
+            "tally.board.CounterBumped"
+          ],
+          "payload": [
+            {
+              "event": "tally.board.CounterBumped",
+              "fields": [
+                {
+                  "target": "counter_id",
+                  "target_type": {
+                    "kind": "primitive",
+                    "name": "uuid"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "counter_id",
+                    "type_ref": {
+                      "kind": "primitive",
+                      "name": "uuid"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "sets": [
+            {
+              "target": "hits",
+              "target_type": {
+                "kind": "primitive",
+                "name": "integer"
+              },
+              "value": {
+                "kind": "increment",
+                "by": "1"
+              }
+            }
+          ]
+        }
+      ],
+      "naming": {}
+    },
+    "tally.board.CreateCounter": {
+      "name": "tally.board.CreateCounter",
+      "domain": "tally.board",
+      "input": [
+        {
+          "name": "label",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "string"
+          },
+          "naming": {}
+        },
+        {
+          "name": "team",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "string"
+          },
+          "naming": {}
+        }
+      ],
+      "examples": {
+        "label": "Coffee",
+        "team": "Red"
+      },
+      "outcomes": [
+        {
+          "name": "created",
+          "condition": {
+            "kind": "otherwise"
+          },
+          "subject": {
+            "entity": "tally.board.Counter",
+            "effect": "creates",
+            "instance": {
+              "from": "observed",
+              "event": "tally.board.CounterCreated",
+              "field": {
+                "name": "counter_id",
+                "type_ref": {
+                  "kind": "primitive",
+                  "name": "uuid"
+                },
+                "naming": {}
+              }
+            }
+          },
+          "test_strategy": "default_branch",
+          "emits": [
+            "tally.board.CounterCreated"
+          ],
+          "payload": [
+            {
+              "event": "tally.board.CounterCreated",
+              "fields": [
+                {
+                  "target": "counter_id",
+                  "target_type": {
+                    "kind": "primitive",
+                    "name": "uuid"
+                  },
+                  "value": {
+                    "kind": "generated"
+                  }
+                }
+              ]
+            }
+          ],
+          "sets": [
+            {
+              "target": "label",
+              "target_type": {
+                "kind": "primitive",
+                "name": "string"
+              },
+              "value": {
+                "kind": "input_field",
+                "field": "label",
+                "type_ref": {
+                  "kind": "primitive",
+                  "name": "string"
+                }
+              }
+            },
+            {
+              "target": "team",
+              "target_type": {
+                "kind": "primitive",
+                "name": "string"
+              },
+              "value": {
+                "kind": "input_field",
+                "field": "team",
+                "type_ref": {
+                  "kind": "primitive",
+                  "name": "string"
+                }
+              }
+            },
+            {
+              "target": "hits",
+              "target_type": {
+                "kind": "primitive",
+                "name": "integer"
+              },
+              "value": {
+                "kind": "literal",
+                "value": "0"
+              }
+            }
+          ]
+        }
+      ],
+      "naming": {}
+    },
+    "tally.board.PinNote": {
+      "name": "tally.board.PinNote",
+      "domain": "tally.board",
+      "input": [
+        {
+          "name": "text",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "string"
+          },
+          "naming": {}
+        }
+      ],
+      "examples": {
+        "text": "Remember the milk"
+      },
+      "outcomes": [
+        {
+          "name": "pinned",
+          "condition": {
+            "kind": "otherwise"
+          },
+          "subject": {
+            "entity": "tally.board.Note",
+            "effect": "creates",
+            "instance": {
+              "from": "observed",
+              "event": "tally.board.NotePinned",
+              "field": {
+                "name": "note_no",
+                "type_ref": {
+                  "kind": "primitive",
+                  "name": "integer"
+                },
+                "naming": {}
+              }
+            }
+          },
+          "test_strategy": "default_branch",
+          "emits": [
+            "tally.board.NotePinned"
+          ],
+          "payload": [
+            {
+              "event": "tally.board.NotePinned",
+              "fields": [
+                {
+                  "target": "note_no",
+                  "target_type": {
+                    "kind": "primitive",
+                    "name": "integer"
+                  },
+                  "value": {
+                    "kind": "generated"
+                  }
+                }
+              ]
+            }
+          ],
+          "sets": [
+            {
+              "target": "text",
+              "target_type": {
+                "kind": "primitive",
+                "name": "string"
+              },
+              "value": {
+                "kind": "input_field",
+                "field": "text",
+                "type_ref": {
+                  "kind": "primitive",
+                  "name": "string"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "naming": {}
+    }
+  },
+  "events": {
+    "tally.board.CounterBumped": {
+      "name": "tally.board.CounterBumped",
+      "domain": "tally.board",
+      "fields": [
+        {
+          "name": "counter_id",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "uuid"
+          },
+          "naming": {}
+        }
+      ],
+      "naming": {}
+    },
+    "tally.board.CounterCreated": {
+      "name": "tally.board.CounterCreated",
+      "domain": "tally.board",
+      "fields": [
+        {
+          "name": "counter_id",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "uuid"
+          },
+          "naming": {}
+        }
+      ],
+      "naming": {}
+    },
+    "tally.board.NotePinned": {
+      "name": "tally.board.NotePinned",
+      "domain": "tally.board",
+      "fields": [
+        {
+          "name": "note_no",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "integer"
+          },
+          "naming": {}
+        }
+      ],
+      "naming": {}
+    }
+  },
+  "errors": {},
+  "views": {
+    "tally.board.Counters": {
+      "name": "tally.board.Counters",
+      "domain": "tally.board",
+      "source": "tally.board.Counter",
+      "fields": [
+        {
+          "name": "counter_id",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "uuid"
+          },
+          "naming": {}
+        },
+        {
+          "name": "label",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "string"
+          },
+          "naming": {}
+        },
+        {
+          "name": "hits",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "integer"
+          },
+          "naming": {}
+        }
+      ],
+      "order_by": [
+        "hits desc"
+      ],
+      "consistency": "read_your_writes",
+      "assertion_style": "expect",
+      "naming": {}
+    },
+    "tally.board.HitsByTeam": {
+      "name": "tally.board.HitsByTeam",
+      "domain": "tally.board",
+      "source": "tally.board.Counter",
+      "fields": [
+        {
+          "name": "team",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "string"
+          },
+          "naming": {}
+        },
+        {
+          "name": "counters",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "integer"
+          },
+          "naming": {}
+        },
+        {
+          "name": "hits",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "integer"
+          },
+          "naming": {}
+        }
+      ],
+      "aggregation": {
+        "group_by": [
+          "team"
+        ],
+        "functions": {
+          "counters": {
+            "function": "count"
+          },
+          "hits": {
+            "function": "sum",
+            "input": {
+              "name": "hits",
+              "type_ref": {
+                "kind": "primitive",
+                "name": "integer"
+              },
+              "naming": {}
+            }
+          }
+        }
+      },
+      "consistency": "read_your_writes",
+      "assertion_style": "expect",
+      "naming": {}
+    },
+    "tally.board.Notes": {
+      "name": "tally.board.Notes",
+      "domain": "tally.board",
+      "source": "tally.board.Note",
+      "fields": [
+        {
+          "name": "note_no",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "integer"
+          },
+          "naming": {}
+        },
+        {
+          "name": "text",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "string"
+          },
+          "naming": {}
+        }
+      ],
+      "consistency": "read_your_writes",
+      "assertion_style": "expect",
+      "naming": {}
+    }
+  },
+  "actors": {
+    "tally.board.Member": {
+      "name": "tally.board.Member",
+      "domain": "tally.board",
+      "may": [
+        "tally.board.BumpCounter",
+        "tally.board.CreateCounter",
+        "tally.board.PinNote"
+      ],
+      "naming": {}
+    }
+  },
+  "bindings": {},
+  "components": {
+    "board-service": {
+      "name": "board-service",
+      "owns": [
+        "tally.board"
+      ],
+      "accepts": [
+        "tally.board.BumpCounter",
+        "tally.board.CreateCounter",
+        "tally.board.PinNote"
+      ],
+      "publishes": [
+        "tally.board.CounterBumped",
+        "tally.board.CounterCreated",
+        "tally.board.NotePinned"
+      ],
+      "reached_by": "network",
+      "naming": {
+        "summary": "Keeps the counters a team bumps, and the notes pinned beside them."
+      }
+    }
+  },
+  "workloads": {}
+}

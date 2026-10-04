@@ -1,0 +1,36 @@
+[package]
+name = "ess-ui"
+description = "One self-contained presentation page from a compiled ESS specification: a Demo that plays the model and a Model reference."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lib]
+name = "ess_ui"
+path = "src/lib.rs"
+
+[[bin]]
+name = "ess-ui"
+path = "src/main.rs"
+
+[dependencies]
+ess-primitives.workspace = true
+ess-domain.workspace = true
+ess-compiler.workspace = true
+ess-conformance.workspace = true
+anyhow.workspace = true
+clap.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_yaml.workspace = true
+sha2.workspace = true
+schemars.workspace = true
+
+[dev-dependencies]
+jsonschema.workspace = true
+
+[lints]
+workspace = true

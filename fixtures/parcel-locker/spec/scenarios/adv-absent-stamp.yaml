@@ -1,0 +1,38 @@
+type: ess-scenario/1
+domain: parcels.locker
+scenario: adv-absent-stamp
+summary: The input guard beside a held-state guard reads an absent Optional input as Unknown, so the default answers.
+
+arrange:
+  - instance: locker
+    entity: parcels.locker.Locker
+
+timeline:
+  - at: 2026-09-30T17:00:00Z
+    command: parcels.locker.InstallLocker
+    actor: parcels.locker.Courier
+    input: {site: Harbour}
+    outcome: installed
+    capture: {instance: locker, event: parcels.locker.LockerInstalled, field: locker_id}
+
+  - at: 2026-09-30T17:00:01Z
+    command: parcels.locker.ParkParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-99, locker_id: {$instance: locker}, recipient: Ada}
+    outcome: parked
+
+  - at: 2026-09-30T17:00:02Z
+    command: parcels.locker.StampParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-99}
+    outcome: stamped
+
+  - at: 2026-09-30T17:00:03Z
+    command: parcels.locker.StampParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-99, priority: Urgent}
+    outcome: stamped-urgent
+
+assert:
+  - view: parcels.locker.Parcels
+    contains: {parcel_code: PX-99, note: urgent}

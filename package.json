@@ -1,0 +1,23 @@
+{
+  "name": "@beyond10x/ess-ui-templates",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The ESS presentation page as a React component for Docusaurus product sites. Consumed by git commit.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./web/index.js",
+  "types": "./web/index.d.ts",
+  "exports": {
+    ".": { "types": "./web/index.d.ts", "default": "./web/index.js" },
+    "./compose": "./web/compose.js",
+    "./assets": "./web/dist/assets.js",
+    "./schema": "./schema/ess-ui-presentation.schema.json"
+  },
+  "files": ["web/index.js", "web/index.d.ts", "web/compose.js", "web/dist/assets.js", "schema/ess-ui-presentation.schema.json"],
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@beyond10x/docs-system": "github:beyond10x/docs-system#929f9653d14212d0595e8dbc704a4e6a61cabd9e"
+  }
+}

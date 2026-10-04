@@ -1,0 +1,38 @@
+type: ess-scenario/1
+domain: parcels.locker
+scenario: left-open
+summary: An accepting express guard that holds on a closed locker overlaps the closed-locker refusal; the model leaves the answer open, so an implementation may give either.
+
+arrange:
+  - instance: locker
+    entity: parcels.locker.Locker
+
+timeline:
+  - at: 2026-09-30T09:00:00Z
+    command: parcels.locker.InstallLocker
+    actor: parcels.locker.Courier
+    input: {site: Harbour}
+    outcome: installed
+    capture: {instance: locker, event: parcels.locker.LockerInstalled, field: locker_id}
+
+  - at: 2026-09-30T09:00:01Z
+    command: parcels.locker.CloseLocker
+    actor: parcels.locker.Courier
+    input: {locker_id: {$instance: locker}}
+    outcome: closed
+
+  - at: 2026-09-30T09:00:02Z
+    command: parcels.locker.DepositParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-60, locker_id: {$instance: locker}, recipient: vip}
+    outcome: express
+
+  - at: 2026-09-30T09:00:03Z
+    command: parcels.locker.DepositParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-61, locker_id: {$instance: locker}, recipient: vip}
+    outcome: locker-closed
+
+assert:
+  - view: parcels.locker.Parcels
+    contains: {recipient: vip}

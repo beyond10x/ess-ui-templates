@@ -1,0 +1,34 @@
+type: ess-scenario/1
+domain: parcels.locker
+scenario: adv-taken-closed
+summary: A taken code on a closed locker for a vip is answered by existing_instance, before the related row whose branches would leave the step open.
+
+arrange:
+  - instance: locker
+    entity: parcels.locker.Locker
+
+timeline:
+  - at: 2026-09-30T16:00:00Z
+    command: parcels.locker.InstallLocker
+    actor: parcels.locker.Courier
+    input: {site: Harbour}
+    outcome: installed
+    capture: {instance: locker, event: parcels.locker.LockerInstalled, field: locker_id}
+
+  - at: 2026-09-30T16:00:01Z
+    command: parcels.locker.DepositParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-98, locker_id: {$instance: locker}, recipient: vip}
+    outcome: express
+
+  - at: 2026-09-30T16:00:02Z
+    command: parcels.locker.CloseLocker
+    actor: parcels.locker.Courier
+    input: {locker_id: {$instance: locker}}
+    outcome: closed
+
+  - at: 2026-09-30T16:00:03Z
+    command: parcels.locker.DepositParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-98, locker_id: {$instance: locker}, recipient: vip}
+    outcome: already-deposited
