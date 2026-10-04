@@ -73,6 +73,140 @@ pub mod assets {
     pub fn js() -> String {
         JS.join("\n")
     }
+
+    /// One self-hosted font file: family, weight range and the woff2 bytes.
+    pub struct Font {
+        pub family: &'static str,
+        pub file: &'static str,
+        pub weight: &'static str,
+        pub woff2: &'static [u8],
+    }
+
+    /// The latin-subset fonts `@beyond10x/docs-system` self-hosts under `b10x-fonts/`, copied from
+    /// the pinned commit into `web/fonts/` by `task fonts`; `task tokens:check` compares them.
+    pub const FONTS: [Font; 3] = [
+        Font {
+            family: "Inter",
+            file: "inter-variable-latin.woff2",
+            weight: "100 900",
+            woff2: include_bytes!("../../../web/fonts/inter-variable-latin.woff2"),
+        },
+        Font {
+            family: "Fira Code",
+            file: "fira-code-regular-latin.woff2",
+            weight: "400",
+            woff2: include_bytes!("../../../web/fonts/fira-code-regular-latin.woff2"),
+        },
+        Font {
+            family: "Fira Code",
+            file: "fira-code-semibold-latin.woff2",
+            weight: "600",
+            woff2: include_bytes!("../../../web/fonts/fira-code-semibold-latin.woff2"),
+        },
+    ];
+
+    /// The OFL licence of each family, embedded beside its faces.
+    pub const LICENCES: [(&str, &str); 2] = [
+        ("Inter", include_str!("../../../web/fonts/OFL-Inter.txt")),
+        (
+            "Fira Code",
+            include_str!("../../../web/fonts/OFL-FiraCode.txt"),
+        ),
+    ];
+
+    /// The `unicode-range` of every face: docs-system's `FONT_RANGE` in `src/product-site.ts`.
+    pub const FONT_RANGE: &str = "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2190-21FF,U+2212,U+2215,U+2315,U+25A0-25FF,U+2713,U+2715,U+FEFF,U+FFFD";
+
+    /// The `@font-face` rules with each font as a `data:` URL, every family preceded by its
+    /// licence as a comment: the same faces docs-system declares, with nothing loaded from a URL.
+    pub fn fonts_css() -> String {
+        let mut out = String::new();
+        for (family, licence) in LICENCES {
+            out.push_str("/*\n");
+            out.push_str(&licence.replace("*/", "* /"));
+            out.push_str("*/\n");
+            for f in FONTS.iter().filter(|f| f.family == family) {
+                out.push_str(&format!(
+                    "@font-face{{font-family:\"{}\";src:url(\"data:font/woff2;base64,{}\") format(\"woff2\");font-weight:{};font-style:normal;font-display:swap;unicode-range:{FONT_RANGE}}}\n",
+                    f.family,
+                    base64(f.woff2),
+                    f.weight
+                ));
+            }
+        }
+        out
+    }
+
+    /// Standard base64 with padding (RFC 4648 section 4).
+    pub fn base64(bytes: &[u8]) -> String {
+        const ALPHABET: &[u8; 64] =
+            b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        let mut out = String::with_capacity(bytes.len().div_ceil(3) * 4);
+        for chunk in bytes.chunks(3) {
+            let b = [
+                chunk[0],
+                *chunk.get(1).unwrap_or(&0),
+                *chunk.get(2).unwrap_or(&0),
+            ];
+            let n = (u32::from(b[0]) << 16) | (u32::from(b[1]) << 8) | u32::from(b[2]);
+            for i in 0..4 {
+                if i <= chunk.len() {
+                    out.push(char::from(ALPHABET[(n >> (18 - 6 * i)) as usize & 63]));
+                } else {
+                    out.push('=');
+                }
+            }
+        }
+        out
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn base64_matches_the_rfc_4648_vectors() {
+            let vectors = [
+                ("", ""),
+                ("f", "Zg=="),
+                ("fo", "Zm8="),
+                ("foo", "Zm9v"),
+                ("foob", "Zm9vYg=="),
+                ("fooba", "Zm9vYmE="),
+                ("foobar", "Zm9vYmFy"),
+            ];
+            for (plain, encoded) in vectors {
+                assert_eq!(base64(plain.as_bytes()), encoded, "{plain:?}");
+            }
+            assert_eq!(base64(&[0xff, 0xfe, 0xfd]), "//79");
+        }
+
+        #[test]
+        fn every_face_is_a_woff2_data_url_and_every_licence_is_embedded() {
+            let css = fonts_css();
+            assert_eq!(css.matches("@font-face{").count(), FONTS.len());
+            assert_eq!(
+                css.matches("src:url(\"data:font/woff2;base64,d09GMg")
+                    .count(),
+                FONTS.len()
+            );
+            for f in &FONTS {
+                assert!(f.woff2.starts_with(b"wOF2"), "{} is not woff2", f.file);
+            }
+            for (_, licence) in LICENCES {
+                assert!(licence.contains("SIL OPEN FONT LICENSE Version 1.1"));
+                assert!(css.contains(licence.lines().next().unwrap_or_default()));
+            }
+            assert!(
+                !css.contains("</"),
+                "the stylesheet must not close its <style>"
+            );
+            assert!(
+                !css.contains("url(\"http"),
+                "no face is loaded from the network"
+            );
+        }
+    }
 }
 
 /// Presentation parameters. Every one is optional.
@@ -1236,7 +1370,7 @@ pub fn html(p: &Presentation) -> String {
         r#"<!doctype html>
 <html lang="en" data-theme="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="ess-ir-sha256" content="{digest}"><meta name="generator" content="{gen}">
-<title>{title}</title><script>{head}</script><style>{css}</style></head>
+<title>{title}</title><script>{head}</script><style>{fonts}{css}</style></head>
 <body class="{class}">{body}
 <script type="application/json" id="ess-model">{model}</script>
 <script type="application/json" id="ess-sim">{sim}</script>
@@ -1246,6 +1380,7 @@ pub fn html(p: &Presentation) -> String {
         gen = esc(&p.generator),
         title = esc(&p.document_title),
         head = assets::HEAD_JS.trim(),
+        fonts = assets::fonts_css(),
         css = assets::css(),
         class = esc(&p.body_class),
         body = p.body,

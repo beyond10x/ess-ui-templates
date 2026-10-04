@@ -39,7 +39,7 @@ The page only plays the baked steps back.
 | `ess-ui data` | the same presentation as JSON (`ess-ui-presentation/1`, schema in `schema/`) |
 | `ess-ui check --html <page>` | nothing; exits 1 unless the page draws exactly what the IR declares |
 | `ess-ui world --scenario <name> --out <dir>` | the final rows of every view after one authored scenario |
-| `ess-ui schema`, `ess-ui assets` | the JSON Schema, and the browser bundle as an ES module |
+| `ess-ui schema`, `ess-ui assets`, `ess-ui fonts` | the JSON Schema, the browser bundle, and the embedded fonts as ES modules |
 
 Parameters can also come from `<spec-dir>/ess-ui.json` (`title`, `repo_url`, `repo_label`, `ref`,
 `spec_root`, `source_url`, `tree_url`, `headline_entity`, `section_order`, `demo`, `present`,
@@ -59,6 +59,12 @@ Add the package by commit (`"@beyond10x/ess-ui-templates": "github:beyond10x/ess
 path `web/`). The component renders the page in a sandboxed frame, so its keyboard handling and
 styles stay its own, and it follows the site's light or dark theme.
 
+The page embeds Inter and Fira Code, the latin-subset files docs-system self-hosts, as `data:`
+URLs with their OFL licences (about 213 KB of the page). The component uses the host's own
+`@font-face` rules for those families when the site declares them, which a docs-system site does,
+and loads `web/dist/fonts.js` only when it does not. The frame has an opaque origin, so the host
+must serve its font files with `Access-Control-Allow-Origin`; GitHub Pages does.
+
 ## How the model is executed
 
 ESS's interpreter (`ess-conformance`, `interpret::execute`) answers every step it determines.
@@ -68,8 +74,10 @@ extensions.
 
 ## Develop
 
-`task check` runs fmt, clippy, the tests, the schema and bundle freshness checks, the React
-wrapper's composition test and the name scan. `task fixtures` recompiles the fixtures with the
+`task check` runs fmt, clippy, the tests, the schema and bundle freshness checks, the tokens and
+fonts against the pinned docs-system commit (fetched into `out/docs-system`, or read from
+`DOCS_SYSTEM`), the React wrapper's composition test and the name scan. `task fonts` copies the
+fonts from the pin. `task fixtures` recompiles the fixtures with the
 `ess` CLI; `task screenshots` writes headless-Chrome screenshots of the billing page.
 
 `fixtures/billing` is ESS's own `examples/billing` and `examples/billing-scenarios` at ESS 0.52.0.
