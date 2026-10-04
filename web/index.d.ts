@@ -26,5 +26,7 @@ export interface EssPresentationProps {
 }
 
 export function EssPresentation(props: EssPresentationProps): ReactElement;
-export function compose(data: EssPresentationData, assets: { css: string; js: string; headJs: string }, opts?: { theme?: 'light' | 'dark' }): string;
+export function compose(data: EssPresentationData, assets: { css: string; js: string; headJs: string }, opts?: { theme?: 'light' | 'dark'; fonts?: string }): string;
+/** The host page's `@font-face` rules for Inter and Fira Code with absolute URLs, or null unless both are declared. */
+export function hostFonts(doc?: Document): string | null;
 export default EssPresentation;

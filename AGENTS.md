@@ -13,6 +13,7 @@ own: opt-out recorded here, as the workspace rule asks.
 | `crates/ess-ui/src/model.rs`, `render.rs`, `demo.rs`, `page.rs` | the page, drawn from the IR JSON |
 | `crates/ess-ui/src/check.rs` | the page held to the IR, without the rendering code |
 | `web/src/` | the browser bundle (JS/CSS); `web/dist/assets.js` is generated from it |
+| `web/fonts/` | Inter and Fira Code (latin woff2) and their OFL licences, copied from the docs-system pin by `task fonts`; `web/dist/fonts.js` is generated from them |
 | `web/index.js`, `web/compose.js` | the React wrapper and the document it composes |
 | `schema/` | the JSON Schema of `ess-ui data` (generated) |
 | `fixtures/` | billing (ESS's example), parcel-locker, tally; compiled with `task fixtures` |
@@ -26,6 +27,8 @@ own: opt-out recorded here, as the workspace rule asks.
   (`NotInterpreted`, `NoValue`) or leaves the outcome open, and add a test in
   `tests/playback.rs` that shows ESS refusing it.
 - After editing `web/src/` or the data types, run `task schema`; `task fresh` fails otherwise.
+- `web/fonts/` and the tokens block of `web/src/tokens.css` are docs-system's, never edited here:
+  moving `DOCS_SYSTEM_PIN` means `task fonts`; `task tokens:check` fails on any difference.
 - No source-project names, customer names or hosts anywhere; `task scan` enforces it.
 
 ## Extensions over ESS's interpreter

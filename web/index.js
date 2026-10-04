@@ -4,12 +4,18 @@
 // control, presentation mode, URL state and styles stay its own and never collide with the host
 // site's. The host's light or dark theme is followed: pass `theme`, or leave it out and the
 // wrapper reads `data-theme` from the host's <html>, as Docusaurus sets it.
+//
+// Fonts: when the host declares the Inter and Fira Code faces (a site built on
+// @beyond10x/docs-system self-hosts them under `b10x-fonts/`), the frame uses the same files by
+// absolute URL. The frame has an opaque origin, so the host must serve them with
+// `Access-Control-Allow-Origin` (GitHub Pages does). Otherwise dist/fonts.js, the same faces as
+// data: URLs, is loaded on demand, so a site that has the fonts never bundles them twice.
 
 import { createElement, useEffect, useMemo, useRef, useState } from 'react';
 import * as assets from './dist/assets.js';
-import { compose } from './compose.js';
+import { compose, hostFonts } from './compose.js';
 
-export { compose } from './compose.js';
+export { compose, hostFonts } from './compose.js';
 
 function hostTheme() {
   if (typeof document === 'undefined') return 'light';
@@ -41,9 +47,30 @@ export function EssPresentation({ data, theme, height = 'min(88vh, 960px)', titl
     return () => watch.disconnect();
   }, [theme]);
 
+  // The fonts are settled once, before the frame is first written: the host's, or the embedded ones.
+  const [fonts, setFonts] = useState(null);
+  useEffect(() => {
+    const host = hostFonts();
+    if (host) {
+      setFonts(host);
+      return undefined;
+    }
+    let live = true;
+    import('./dist/fonts.js').then(
+      (m) => live && setFonts(m.css),
+      () => live && setFonts(''),
+    );
+    return () => {
+      live = false;
+    };
+  }, []);
+
   // The document is composed once per data; a theme change is posted to it, not re-rendered.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const srcDoc = useMemo(() => compose(data, assets, { theme: current }), [data]);
+  const srcDoc = useMemo(
+    () => (fonts === null ? undefined : compose(data, assets, { theme: current, fonts })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [data, fonts],
+  );
 
   const post = () => {
     const w = frame.current && frame.current.contentWindow;

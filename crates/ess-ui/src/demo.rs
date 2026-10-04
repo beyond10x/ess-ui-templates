@@ -316,8 +316,8 @@ pub fn render_demo(m: &Model<'_>, sim: &Value, colour: &BTreeMap<String, String>
  <input id="dm-scrub" type="range" min="0" max="0" value="0" aria-label="Timeline">
  {}
  <span class="dm-clock"><span id="dm-time"></span>step <b id="dm-step">0</b>/<span id="dm-n">0</span></span>
- <label class="dm-follow"><input type="checkbox" id="dm-follow" checked> follow</label>
- <button type="button" data-dm="fit" title="Fit the canvas">Fit</button>
+ <span class="dm-view"><label class="dm-follow"><input type="checkbox" id="dm-follow" checked> follow</label>
+ <button type="button" data-dm="fit" title="Fit the canvas">Fit</button></span>
 </div>
 <div class="dm-rail" aria-label="Actors"><h4>actors</h4>{actors}</div>
 <div class="dm-stage"><div class="dm-caption" id="dm-caption" aria-live="polite"></div>{}
