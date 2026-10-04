@@ -1,0 +1,80 @@
+type: ess-scenario/1
+domain: parcels.locker
+scenario: refusals
+summary: A taken code, a missing locker, a closed locker, an empty note, a refused signature and an unknown parcel are each refused.
+
+arrange:
+  - instance: locker
+    entity: parcels.locker.Locker
+
+timeline:
+  - at: 2026-09-29T10:00:00Z
+    command: parcels.locker.InstallLocker
+    actor: parcels.locker.Courier
+    input: {site: Harbour}
+    outcome: installed
+    capture: {instance: locker, event: parcels.locker.LockerInstalled, field: locker_id}
+
+  - at: 2026-09-29T10:00:01Z
+    command: parcels.locker.DepositParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-7, locker_id: {$instance: locker}, recipient: Ada}
+    outcome: deposited
+
+  - at: 2026-09-29T10:00:02Z
+    command: parcels.locker.DepositParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-7, locker_id: {$instance: locker}, recipient: Ada}
+    outcome: already-deposited
+
+  - at: 2026-09-29T10:00:03Z
+    command: parcels.locker.DepositParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-8, locker_id: 00000000-0000-4000-8000-000000000999, recipient: Ada}
+    outcome: no-locker
+
+  - at: 2026-09-29T10:00:04Z
+    command: parcels.locker.NoteParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-7}
+    outcome: nothing-to-note
+
+  - at: 2026-09-29T10:00:05Z
+    command: parcels.locker.CollectParcel
+    actor: parcels.locker.Recipient
+    input: {parcel_code: PX-7, signature: refused}
+    outcome: signature-refused
+
+  - at: 2026-09-29T10:00:06Z
+    command: parcels.locker.CollectParcel
+    actor: parcels.locker.Recipient
+    input: {parcel_code: PX-7}
+    outcome: collected
+
+  - at: 2026-09-29T10:00:07Z
+    command: parcels.locker.CollectParcel
+    actor: parcels.locker.Recipient
+    input: {parcel_code: PX-7}
+    outcome: not-in-locker
+
+  - at: 2026-09-29T10:00:08Z
+    command: parcels.locker.CloseLocker
+    actor: parcels.locker.Courier
+    input: {locker_id: {$instance: locker}}
+    outcome: closed
+
+  - at: 2026-09-29T10:00:09Z
+    command: parcels.locker.DepositParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-9, locker_id: {$instance: locker}, recipient: Ada}
+    outcome: locker-closed
+
+  - at: 2026-09-29T10:00:10Z
+    command: parcels.locker.DiscardParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-404}
+    outcome: no-such-parcel
+
+assert:
+  - view: parcels.locker.Lockers
+    contains: {locker_id: {$instance: locker}, accepting: false}

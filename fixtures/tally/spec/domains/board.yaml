@@ -1,0 +1,129 @@
+domain: tally.board
+
+summary: Counters a team bumps, totals per team, and numbered notes.
+
+entities:
+  - name: tally.board.Counter
+    identity:
+      name: counter_id
+      type: Uuid
+    fields:
+      - name: label
+        type: String
+      - name: team
+        type: String
+      - name: hits
+        type: Integer
+    lifecycle:
+      initial: Open
+      states: [Open]
+      terminal: [Open]
+
+  - name: tally.board.Note
+    identity:
+      name: note_no
+      type: Integer
+    fields:
+      - name: text
+        type: String
+    lifecycle:
+      initial: Pinned
+      states: [Pinned]
+      terminal: [Pinned]
+
+actors:
+  - name: tally.board.Member
+    may:
+      - tally.board.CreateCounter
+      - tally.board.BumpCounter
+      - tally.board.PinNote
+
+events:
+  - name: tally.board.CounterCreated
+    fields:
+      - {name: counter_id, type: Uuid}
+  - name: tally.board.CounterBumped
+    fields:
+      - {name: counter_id, type: Uuid}
+  - name: tally.board.NotePinned
+    fields:
+      - {name: note_no, type: Integer}
+
+commands:
+  - name: tally.board.CreateCounter
+    input:
+      - name: label
+        type: String
+        example: Coffee
+      - name: team
+        type: String
+        example: Red
+    outcomes:
+      - name: created
+        creates: tally.board.Counter
+        instance: counter_id
+        sets:
+          label: input.label
+          team: input.team
+          hits: 0
+        emits: [tally.board.CounterCreated]
+        payload:
+          tally.board.CounterCreated:
+            counter_id: {generated: true}
+
+  - name: tally.board.BumpCounter
+    input:
+      - name: counter_id
+        type: Uuid
+    outcomes:
+      - name: bumped
+        updates: tally.board.Counter
+        instance: counter_id
+        sets:
+          hits: {increment: 1}
+        emits: [tally.board.CounterBumped]
+        payload:
+          tally.board.CounterBumped:
+            counter_id: input.counter_id
+
+  - name: tally.board.PinNote
+    input:
+      - name: text
+        type: String
+        example: Remember the milk
+    outcomes:
+      - name: pinned
+        creates: tally.board.Note
+        instance: note_no
+        sets:
+          text: input.text
+        emits: [tally.board.NotePinned]
+        payload:
+          tally.board.NotePinned:
+            note_no: {generated: true}
+
+views:
+  - name: tally.board.Counters
+    source: tally.board.Counter
+    consistency: read_your_writes
+    order_by: [hits desc]
+    fields:
+      - {name: counter_id, type: Uuid}
+      - {name: label, type: String}
+      - {name: hits, type: Integer}
+
+  - name: tally.board.HitsByTeam
+    source: tally.board.Counter
+    consistency: read_your_writes
+    group_by: [team]
+    fields:
+      - {name: team, type: String}
+      - {name: counters, type: Integer, aggregate: {count: {}}}
+      - {name: hits, type: Integer, aggregate: {sum: hits}}
+
+  - name: tally.board.Notes
+    source: tally.board.Note
+    consistency: read_your_writes
+    fields:
+      - {name: note_no, type: Integer}
+      - {name: text, type: String}

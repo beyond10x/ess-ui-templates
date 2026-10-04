@@ -1,0 +1,17 @@
+components:
+  - component: board-service
+    summary: Keeps the counters a team bumps, and the notes pinned beside them.
+    owns:
+      domains:
+        - tally.board
+    accepts:
+      commands:
+        - tally.board.CreateCounter
+        - tally.board.BumpCounter
+        - tally.board.PinNote
+    publishes:
+      events:
+        - tally.board.CounterCreated
+        - tally.board.CounterBumped
+        - tally.board.NotePinned
+    reached_by: network

@@ -1,0 +1,274 @@
+{
+  "provenance": {
+    "suite_version": "ess-conformance/4",
+    "system": "tally",
+    "specification_version": "v1",
+    "spec_digest": "7e9745cf1af7d1bd7de798a1971e78fc976c5c90ce52c7cff0892076505664e8",
+    "contract_digest": "6e9b0031bea18c464863d69c3969ce8b5a57cd4bd7d7ca177f3dfbb879380958"
+  },
+  "scenarios": {
+    "tally.board/authored/bump-and-total": {
+      "purpose": "Two counters of one team are bumped; the team's total is their sum, and the busier counter ranks first.",
+      "steps": [
+        {
+          "step": "execute_command",
+          "command": "tally.board.CreateCounter",
+          "actor": "tally.board.Member",
+          "input": {
+            "label": {
+              "kind": "literal",
+              "value": "Coffee"
+            },
+            "team": {
+              "kind": "literal",
+              "value": "Red"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "tally.board.CreateCounter",
+            "outcome": "created"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "coffee",
+          "entity": "tally.board.Counter",
+          "event": "tally.board.CounterCreated",
+          "field": "counter_id"
+        },
+        {
+          "step": "execute_command",
+          "command": "tally.board.CreateCounter",
+          "actor": "tally.board.Member",
+          "input": {
+            "label": {
+              "kind": "literal",
+              "value": "Tea"
+            },
+            "team": {
+              "kind": "literal",
+              "value": "Red"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "tally.board.CreateCounter",
+            "outcome": "created"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "tea",
+          "entity": "tally.board.Counter",
+          "event": "tally.board.CounterCreated",
+          "field": "counter_id"
+        },
+        {
+          "step": "execute_command",
+          "command": "tally.board.BumpCounter",
+          "actor": "tally.board.Member",
+          "input": {
+            "counter_id": {
+              "kind": "instance",
+              "instance": "tea"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "tally.board.BumpCounter",
+            "outcome": "bumped"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "tally.board.BumpCounter",
+          "actor": "tally.board.Member",
+          "input": {
+            "counter_id": {
+              "kind": "instance",
+              "instance": "tea"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "tally.board.BumpCounter",
+            "outcome": "bumped"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "tally.board.BumpCounter",
+          "actor": "tally.board.Member",
+          "input": {
+            "counter_id": {
+              "kind": "instance",
+              "instance": "coffee"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "tally.board.BumpCounter",
+            "outcome": "bumped"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "tally.board.PinNote",
+          "actor": "tally.board.Member",
+          "input": {
+            "text": {
+              "kind": "literal",
+              "value": "Restock tea"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "tally.board.PinNote",
+            "outcome": "pinned"
+          }
+        },
+        {
+          "step": "query_view",
+          "view": "tally.board.HitsByTeam"
+        },
+        {
+          "step": "expect_view",
+          "view": "tally.board.HitsByTeam",
+          "expectation": {
+            "expect": "contains",
+            "fields": {
+              "counters": {
+                "kind": "literal",
+                "value": 2.0
+              },
+              "hits": {
+                "kind": "literal",
+                "value": 3.0
+              },
+              "team": {
+                "kind": "literal",
+                "value": "Red"
+              }
+            }
+          }
+        },
+        {
+          "step": "query_view",
+          "view": "tally.board.Counters"
+        },
+        {
+          "step": "expect_view",
+          "view": "tally.board.Counters",
+          "expectation": {
+            "expect": "at",
+            "order_by": [
+              "hits desc"
+            ],
+            "position": {
+              "row": "first"
+            },
+            "fields": {
+              "counter_id": {
+                "kind": "instance",
+                "instance": "tea"
+              }
+            }
+          }
+        },
+        {
+          "step": "query_view",
+          "view": "tally.board.Notes"
+        },
+        {
+          "step": "expect_view",
+          "view": "tally.board.Notes",
+          "expectation": {
+            "expect": "contains",
+            "fields": {
+              "text": {
+                "kind": "literal",
+                "value": "Restock tea"
+              }
+            }
+          }
+        }
+      ],
+      "source": [
+        {
+          "kind": "domain",
+          "name": "tally.board"
+        },
+        {
+          "kind": "entity",
+          "name": "tally.board.Counter"
+        },
+        {
+          "kind": "command",
+          "name": "tally.board.BumpCounter"
+        },
+        {
+          "kind": "command",
+          "name": "tally.board.CreateCounter"
+        },
+        {
+          "kind": "command",
+          "name": "tally.board.PinNote"
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "tally.board.BumpCounter",
+            "outcome": "bumped"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "tally.board.CreateCounter",
+            "outcome": "created"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "tally.board.PinNote",
+            "outcome": "pinned"
+          }
+        },
+        {
+          "kind": "event",
+          "name": "tally.board.CounterCreated"
+        },
+        {
+          "kind": "view",
+          "name": "tally.board.Counters"
+        },
+        {
+          "kind": "view",
+          "name": "tally.board.HitsByTeam"
+        },
+        {
+          "kind": "view",
+          "name": "tally.board.Notes"
+        },
+        {
+          "kind": "actor",
+          "name": "tally.board.Member"
+        }
+      ]
+    }
+  }
+}

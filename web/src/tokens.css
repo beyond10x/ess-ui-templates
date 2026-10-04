@@ -1,0 +1,106 @@
+/*
+ * Design tokens of the beyond10x product sites, as @beyond10x/docs-system publishes them in
+ * styles/product-theme.css at commit 929f9653d14212d0595e8dbc704a4e6a61cabd9e (the pin in
+ * web/package.json). Copied, not imported, because the page works offline from file:// and loads
+ * nothing from the network. `task tokens:check` compares this block with the pinned file.
+ */
+html[data-theme='light'],
+:root {
+  --b10x-color-canvas: #f6f8f5;
+  --b10x-color-surface: #ffffff;
+  --b10x-color-surface-muted: #eef3f0;
+  --b10x-color-panel: #ffffff;
+  --b10x-color-heading: #0f1b1c;
+  --b10x-color-text: #1d2a2b;
+  --b10x-color-muted: #4f625d;
+  --b10x-color-line: #7f918b;
+  --b10x-color-hairline: #d6dfda;
+  --b10x-color-link: #17684a;
+  --b10x-color-focus: #8a5300;
+  --b10x-color-accent: #17684a;
+  --b10x-color-accent-strong: #0f553b;
+  --b10x-color-on-accent: #ffffff;
+  --b10x-color-amber: #8a5300;
+  --b10x-color-rose: #a1392b;
+  --b10x-color-sky: #1f5f86;
+  --b10x-color-success: #17684a;
+  --b10x-color-warning: #8a5300;
+  --b10x-color-danger: #a1392b;
+  --b10x-color-cyan: #1f5f86;
+  --b10x-color-lime: #17684a;
+  --b10x-code-chrome: #eaf0ec;
+  --b10x-code-control: #ffffff;
+  --b10x-code-control-text: #1d2a2b;
+  --b10x-code-selection: #cfe6da;
+  --b10x-code-border: #cdd8d2;
+  --b10x-inline-code: #e6eee9;
+  --b10x-notice: #f8f1e2;
+  --b10x-font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --b10x-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+html[data-theme='dark'] {
+  --b10x-color-canvas: #101a1b;
+  --b10x-color-surface: #172324;
+  --b10x-color-surface-muted: #13201f;
+  --b10x-color-panel: #172324;
+  --b10x-color-heading: #f1f6f3;
+  --b10x-color-text: #e7eeea;
+  --b10x-color-muted: #a8b8b3;
+  --b10x-color-line: #5d7470;
+  --b10x-color-hairline: #314244;
+  --b10x-color-link: #b6e5ce;
+  --b10x-color-focus: #efd09a;
+  --b10x-color-accent: #b6e5ce;
+  --b10x-color-accent-strong: #d5f3e3;
+  --b10x-color-on-accent: #10241c;
+  --b10x-color-amber: #efd09a;
+  --b10x-color-rose: #eeb1a8;
+  --b10x-color-sky: #b9d9ee;
+  --b10x-color-success: #b6e5ce;
+  --b10x-color-warning: #efd09a;
+  --b10x-color-danger: #eeb1a8;
+  --b10x-color-cyan: #b9d9ee;
+  --b10x-color-lime: #b6e5ce;
+  --b10x-code-chrome: #101b1c;
+  --b10x-code-control: #172324;
+  --b10x-code-control-text: #e7eeea;
+  --b10x-code-selection: #24453a;
+  --b10x-code-border: #2d4140;
+  --b10x-inline-code: #213132;
+  --b10x-notice: #27281f;
+}
+
+/* The page's own palette, read from the tokens above. */
+:root,
+html[data-theme] {
+  --bg: var(--b10x-color-canvas);
+  --panel: var(--b10x-color-surface);
+  --panel-solid: var(--b10x-color-surface);
+  --line: var(--b10x-color-hairline);
+  --text: var(--b10x-color-heading);
+  --text2: var(--b10x-color-muted);
+  --dim: color-mix(in srgb, var(--b10x-color-muted) 78%, var(--b10x-color-canvas));
+  --accent: var(--b10x-color-accent);
+  --cyan: var(--b10x-color-sky);
+  --green: var(--b10x-color-accent);
+  --amber: var(--b10x-color-amber);
+  --rose: var(--b10x-color-rose);
+  --violet: #5a4a9c;
+  --node: var(--b10x-color-surface);
+  --node-active: color-mix(in srgb, var(--b10x-color-sky) 14%, var(--b10x-color-surface));
+  --node-visited: color-mix(in srgb, var(--b10x-color-sky) 6%, var(--b10x-color-surface));
+  --band: var(--b10x-color-surface);
+  --label-bg: color-mix(in srgb, var(--b10x-color-surface) 94%, transparent);
+  --chip-bg: transparent;
+  --glow: color-mix(in srgb, var(--b10x-color-sky) 40%, transparent);
+  --grid: color-mix(in srgb, var(--b10x-color-heading) 5%, transparent);
+  --hl: color-mix(in srgb, var(--b10x-color-accent) 11%, transparent);
+  --mono: var(--b10x-font-mono);
+  --sans: var(--b10x-font-sans);
+  color-scheme: light;
+}
+:root[data-theme='dark'] {
+  --violet: #cfc3ee;
+  color-scheme: dark;
+}

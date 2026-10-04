@@ -1,0 +1,2691 @@
+{
+  "provenance": {
+    "suite_version": "ess-conformance/4",
+    "system": "parcels",
+    "specification_version": "v1",
+    "spec_digest": "de386016f80804ae1452830b2e4cc5845072d46534d6267c3d0b5339c542f31d",
+    "contract_digest": "e66d51b5ba09ac1c8f9144562135d98d4b796a0b305806647b60949d5ef6d9bd"
+  },
+  "scenarios": {
+    "parcels.locker/authored/adv-absent-flag": {
+      "purpose": "The input guard beside a subject guard reads an absent Optional input as Unknown, so the guarded refusal is not taken.",
+      "steps": [
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.InstallLocker",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "site": {
+              "kind": "literal",
+              "value": "Harbour"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "locker",
+          "entity": "parcels.locker.Locker",
+          "event": "parcels.locker.LockerInstalled",
+          "field": "locker_id"
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.ParkParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-97"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "Ada"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.ParkParcel",
+            "outcome": "parked"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.FlagParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-97"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.FlagParcel",
+            "outcome": "flagged"
+          }
+        }
+      ],
+      "source": [
+        {
+          "kind": "domain",
+          "name": "parcels.locker"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.LockerId"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.ParcelCode"
+        },
+        {
+          "kind": "entity",
+          "name": "parcels.locker.Locker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.FlagParcel"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.InstallLocker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.ParkParcel"
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.FlagParcel",
+            "outcome": "flagged"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.ParkParcel",
+            "outcome": "parked"
+          }
+        },
+        {
+          "kind": "event",
+          "name": "parcels.locker.LockerInstalled"
+        },
+        {
+          "kind": "actor",
+          "name": "parcels.locker.Courier"
+        }
+      ]
+    },
+    "parcels.locker/authored/adv-absent-stamp": {
+      "purpose": "The input guard beside a held-state guard reads an absent Optional input as Unknown, so the default answers.",
+      "steps": [
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.InstallLocker",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "site": {
+              "kind": "literal",
+              "value": "Harbour"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "locker",
+          "entity": "parcels.locker.Locker",
+          "event": "parcels.locker.LockerInstalled",
+          "field": "locker_id"
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.ParkParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-99"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "Ada"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.ParkParcel",
+            "outcome": "parked"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.StampParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-99"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.StampParcel",
+            "outcome": "stamped"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.StampParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-99"
+            },
+            "priority": {
+              "kind": "literal",
+              "value": "Urgent"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.StampParcel",
+            "outcome": "stamped-urgent"
+          }
+        },
+        {
+          "step": "query_view",
+          "view": "parcels.locker.Parcels"
+        },
+        {
+          "step": "expect_view",
+          "view": "parcels.locker.Parcels",
+          "expectation": {
+            "expect": "contains",
+            "fields": {
+              "note": {
+                "kind": "literal",
+                "value": "urgent"
+              },
+              "parcel_code": {
+                "kind": "literal",
+                "value": "PX-99"
+              }
+            }
+          }
+        }
+      ],
+      "source": [
+        {
+          "kind": "domain",
+          "name": "parcels.locker"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.LockerId"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.ParcelCode"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.Priority"
+        },
+        {
+          "kind": "entity",
+          "name": "parcels.locker.Locker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.InstallLocker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.ParkParcel"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.StampParcel"
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.ParkParcel",
+            "outcome": "parked"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.StampParcel",
+            "outcome": "stamped"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.StampParcel",
+            "outcome": "stamped-urgent"
+          }
+        },
+        {
+          "kind": "event",
+          "name": "parcels.locker.LockerInstalled"
+        },
+        {
+          "kind": "view",
+          "name": "parcels.locker.Parcels"
+        },
+        {
+          "kind": "actor",
+          "name": "parcels.locker.Courier"
+        }
+      ]
+    },
+    "parcels.locker/authored/adv-taken-closed": {
+      "purpose": "A taken code on a closed locker for a vip is answered by existing_instance, before the related row whose branches would leave the step open.",
+      "steps": [
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.InstallLocker",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "site": {
+              "kind": "literal",
+              "value": "Harbour"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "locker",
+          "entity": "parcels.locker.Locker",
+          "event": "parcels.locker.LockerInstalled",
+          "field": "locker_id"
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.DepositParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-98"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "vip"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.DepositParcel",
+            "outcome": "express"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.CloseLocker",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.CloseLocker",
+            "outcome": "closed"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.DepositParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-98"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "vip"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.DepositParcel",
+            "outcome": "already-deposited"
+          }
+        }
+      ],
+      "source": [
+        {
+          "kind": "domain",
+          "name": "parcels.locker"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.LockerId"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.ParcelCode"
+        },
+        {
+          "kind": "entity",
+          "name": "parcels.locker.Locker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.CloseLocker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.DepositParcel"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.InstallLocker"
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.CloseLocker",
+            "outcome": "closed"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.DepositParcel",
+            "outcome": "already-deposited"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.DepositParcel",
+            "outcome": "express"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "kind": "event",
+          "name": "parcels.locker.LockerInstalled"
+        },
+        {
+          "kind": "actor",
+          "name": "parcels.locker.Courier"
+        }
+      ]
+    },
+    "parcels.locker/authored/adv-two-accepting": {
+      "purpose": "On an open locker two accepting when-branches of RushParcel hold for a vip; ESS's synthesis selects neither, so the step is left open.",
+      "steps": [
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.InstallLocker",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "site": {
+              "kind": "literal",
+              "value": "Harbour"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "locker",
+          "entity": "parcels.locker.Locker",
+          "event": "parcels.locker.LockerInstalled",
+          "field": "locker_id"
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.RushParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-95"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "vip"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.RushParcel",
+            "outcome": "rush-a"
+          }
+        }
+      ],
+      "source": [
+        {
+          "kind": "domain",
+          "name": "parcels.locker"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.LockerId"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.ParcelCode"
+        },
+        {
+          "kind": "entity",
+          "name": "parcels.locker.Locker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.InstallLocker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.RushParcel"
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.RushParcel",
+            "outcome": "rush-a"
+          }
+        },
+        {
+          "kind": "event",
+          "name": "parcels.locker.LockerInstalled"
+        },
+        {
+          "kind": "actor",
+          "name": "parcels.locker.Courier"
+        }
+      ]
+    },
+    "parcels.locker/authored/deposit-and-collect": {
+      "purpose": "A courier deposits two parcels, notes one, discards the other, and the recipient collects the first without a signature.",
+      "steps": [
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.InstallLocker",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "site": {
+              "kind": "literal",
+              "value": "North Station"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "locker",
+          "entity": "parcels.locker.Locker",
+          "event": "parcels.locker.LockerInstalled",
+          "field": "locker_id"
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.DepositParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-1"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "Ada"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.DepositParcel",
+            "outcome": "deposited"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.DepositParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-2"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "Grace"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.DepositParcel",
+            "outcome": "deposited"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.NoteParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "note": {
+              "kind": "literal",
+              "value": "leave with the attendant"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-1"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.NoteParcel",
+            "outcome": "noted"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.DiscardParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-2"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.DiscardParcel",
+            "outcome": "discarded"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.CollectParcel",
+          "actor": "parcels.locker.Recipient",
+          "input": {
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-1"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.CollectParcel",
+            "outcome": "collected"
+          }
+        },
+        {
+          "step": "query_view",
+          "view": "parcels.locker.Parcels"
+        },
+        {
+          "step": "expect_view",
+          "view": "parcels.locker.Parcels",
+          "expectation": {
+            "expect": "contains",
+            "fields": {
+              "note": {
+                "kind": "literal",
+                "value": "leave with the attendant"
+              },
+              "parcel_code": {
+                "kind": "literal",
+                "value": "PX-1"
+              },
+              "recipient": {
+                "kind": "literal",
+                "value": "Ada"
+              }
+            }
+          }
+        }
+      ],
+      "source": [
+        {
+          "kind": "domain",
+          "name": "parcels.locker"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.LockerId"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.ParcelCode"
+        },
+        {
+          "kind": "entity",
+          "name": "parcels.locker.Locker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.CollectParcel"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.DepositParcel"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.DiscardParcel"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.InstallLocker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.NoteParcel"
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.CollectParcel",
+            "outcome": "collected"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.DepositParcel",
+            "outcome": "deposited"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.DiscardParcel",
+            "outcome": "discarded"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.NoteParcel",
+            "outcome": "noted"
+          }
+        },
+        {
+          "kind": "event",
+          "name": "parcels.locker.LockerInstalled"
+        },
+        {
+          "kind": "view",
+          "name": "parcels.locker.Parcels"
+        },
+        {
+          "kind": "actor",
+          "name": "parcels.locker.Courier"
+        },
+        {
+          "kind": "actor",
+          "name": "parcels.locker.Recipient"
+        }
+      ]
+    },
+    "parcels.locker/authored/left-open": {
+      "purpose": "An accepting express guard that holds on a closed locker overlaps the closed-locker refusal; the model leaves the answer open, so an implementation may give either.",
+      "steps": [
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.InstallLocker",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "site": {
+              "kind": "literal",
+              "value": "Harbour"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "locker",
+          "entity": "parcels.locker.Locker",
+          "event": "parcels.locker.LockerInstalled",
+          "field": "locker_id"
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.CloseLocker",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.CloseLocker",
+            "outcome": "closed"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.DepositParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-60"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "vip"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.DepositParcel",
+            "outcome": "express"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.DepositParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-61"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "vip"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.DepositParcel",
+            "outcome": "locker-closed"
+          }
+        },
+        {
+          "step": "query_view",
+          "view": "parcels.locker.Parcels"
+        },
+        {
+          "step": "expect_view",
+          "view": "parcels.locker.Parcels",
+          "expectation": {
+            "expect": "contains",
+            "fields": {
+              "recipient": {
+                "kind": "literal",
+                "value": "vip"
+              }
+            }
+          }
+        }
+      ],
+      "source": [
+        {
+          "kind": "domain",
+          "name": "parcels.locker"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.LockerId"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.ParcelCode"
+        },
+        {
+          "kind": "entity",
+          "name": "parcels.locker.Locker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.CloseLocker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.DepositParcel"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.InstallLocker"
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.CloseLocker",
+            "outcome": "closed"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.DepositParcel",
+            "outcome": "express"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.DepositParcel",
+            "outcome": "locker-closed"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "kind": "event",
+          "name": "parcels.locker.LockerInstalled"
+        },
+        {
+          "kind": "view",
+          "name": "parcels.locker.Parcels"
+        },
+        {
+          "kind": "actor",
+          "name": "parcels.locker.Courier"
+        }
+      ]
+    },
+    "parcels.locker/authored/minted-code": {
+      "purpose": "Parcels registered without a code are created under distinct codes the system mints, and a minted code skips one a caller already supplied.",
+      "steps": [
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.InstallLocker",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "site": {
+              "kind": "literal",
+              "value": "Harbour"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "locker",
+          "entity": "parcels.locker.Locker",
+          "event": "parcels.locker.LockerInstalled",
+          "field": "locker_id"
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.RegisterParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "Grace"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.RegisterParcel",
+            "outcome": "registered"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.RegisterParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "00000000-0000-4000-8000-000000000003"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "Heidi"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.RegisterParcel",
+            "outcome": "registered"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.RegisterParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "Ivan"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.RegisterParcel",
+            "outcome": "registered"
+          }
+        },
+        {
+          "step": "query_view",
+          "view": "parcels.locker.Parcels"
+        },
+        {
+          "step": "expect_view",
+          "view": "parcels.locker.Parcels",
+          "expectation": {
+            "expect": "contains",
+            "fields": {
+              "recipient": {
+                "kind": "literal",
+                "value": "Grace"
+              }
+            }
+          }
+        },
+        {
+          "step": "query_view",
+          "view": "parcels.locker.Parcels"
+        },
+        {
+          "step": "expect_view",
+          "view": "parcels.locker.Parcels",
+          "expectation": {
+            "expect": "contains",
+            "fields": {
+              "recipient": {
+                "kind": "literal",
+                "value": "Heidi"
+              }
+            }
+          }
+        },
+        {
+          "step": "query_view",
+          "view": "parcels.locker.Parcels"
+        },
+        {
+          "step": "expect_view",
+          "view": "parcels.locker.Parcels",
+          "expectation": {
+            "expect": "contains",
+            "fields": {
+              "recipient": {
+                "kind": "literal",
+                "value": "Ivan"
+              }
+            }
+          }
+        }
+      ],
+      "source": [
+        {
+          "kind": "domain",
+          "name": "parcels.locker"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.LockerId"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.ParcelCode"
+        },
+        {
+          "kind": "entity",
+          "name": "parcels.locker.Locker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.InstallLocker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.RegisterParcel"
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.RegisterParcel",
+            "outcome": "registered"
+          }
+        },
+        {
+          "kind": "event",
+          "name": "parcels.locker.LockerInstalled"
+        },
+        {
+          "kind": "view",
+          "name": "parcels.locker.Parcels"
+        },
+        {
+          "kind": "actor",
+          "name": "parcels.locker.Courier"
+        }
+      ]
+    },
+    "parcels.locker/authored/precedence": {
+      "purpose": "Input-guarded refusals answer before a related row and before an accepting guard, and a code the caller may supply is refused when sent twice.",
+      "steps": [
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.InstallLocker",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "site": {
+              "kind": "literal",
+              "value": "Harbour"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "locker",
+          "entity": "parcels.locker.Locker",
+          "event": "parcels.locker.LockerInstalled",
+          "field": "locker_id"
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.RegisterParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-50"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "Ada"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.RegisterParcel",
+            "outcome": "registered"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.RegisterParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-50"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "Ada"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.RegisterParcel",
+            "outcome": "code-taken"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.NoteParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "note": {
+              "kind": "literal",
+              "value": ""
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-50"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.NoteParcel",
+            "outcome": "blank-note"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.CloseLocker",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.CloseLocker",
+            "outcome": "closed"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.DepositParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-51"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "nobody"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.DepositParcel",
+            "outcome": "bad-recipient"
+          }
+        },
+        {
+          "step": "query_view",
+          "view": "parcels.locker.Parcels"
+        },
+        {
+          "step": "expect_view",
+          "view": "parcels.locker.Parcels",
+          "expectation": {
+            "expect": "contains",
+            "fields": {
+              "parcel_code": {
+                "kind": "literal",
+                "value": "PX-50"
+              },
+              "recipient": {
+                "kind": "literal",
+                "value": "Ada"
+              }
+            }
+          }
+        }
+      ],
+      "source": [
+        {
+          "kind": "domain",
+          "name": "parcels.locker"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.LockerId"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.ParcelCode"
+        },
+        {
+          "kind": "entity",
+          "name": "parcels.locker.Locker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.CloseLocker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.DepositParcel"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.InstallLocker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.NoteParcel"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.RegisterParcel"
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.CloseLocker",
+            "outcome": "closed"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.DepositParcel",
+            "outcome": "bad-recipient"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.NoteParcel",
+            "outcome": "blank-note"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.RegisterParcel",
+            "outcome": "code-taken"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.RegisterParcel",
+            "outcome": "registered"
+          }
+        },
+        {
+          "kind": "event",
+          "name": "parcels.locker.LockerInstalled"
+        },
+        {
+          "kind": "view",
+          "name": "parcels.locker.Parcels"
+        },
+        {
+          "kind": "actor",
+          "name": "parcels.locker.Courier"
+        }
+      ]
+    },
+    "parcels.locker/authored/refusals": {
+      "purpose": "A taken code, a missing locker, a closed locker, an empty note, a refused signature and an unknown parcel are each refused.",
+      "steps": [
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.InstallLocker",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "site": {
+              "kind": "literal",
+              "value": "Harbour"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "locker",
+          "entity": "parcels.locker.Locker",
+          "event": "parcels.locker.LockerInstalled",
+          "field": "locker_id"
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.DepositParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-7"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "Ada"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.DepositParcel",
+            "outcome": "deposited"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.DepositParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-7"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "Ada"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.DepositParcel",
+            "outcome": "already-deposited"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.DepositParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "literal",
+              "value": "00000000-0000-4000-8000-000000000999"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-8"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "Ada"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.DepositParcel",
+            "outcome": "no-locker"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.NoteParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-7"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.NoteParcel",
+            "outcome": "nothing-to-note"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.CollectParcel",
+          "actor": "parcels.locker.Recipient",
+          "input": {
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-7"
+            },
+            "signature": {
+              "kind": "literal",
+              "value": "refused"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.CollectParcel",
+            "outcome": "signature-refused"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.CollectParcel",
+          "actor": "parcels.locker.Recipient",
+          "input": {
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-7"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.CollectParcel",
+            "outcome": "collected"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.CollectParcel",
+          "actor": "parcels.locker.Recipient",
+          "input": {
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-7"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.CollectParcel",
+            "outcome": "not-in-locker"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.CloseLocker",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.CloseLocker",
+            "outcome": "closed"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.DepositParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-9"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "Ada"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.DepositParcel",
+            "outcome": "locker-closed"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.DiscardParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-404"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.DiscardParcel",
+            "outcome": "no-such-parcel"
+          }
+        },
+        {
+          "step": "query_view",
+          "view": "parcels.locker.Lockers"
+        },
+        {
+          "step": "expect_view",
+          "view": "parcels.locker.Lockers",
+          "expectation": {
+            "expect": "contains",
+            "fields": {
+              "accepting": {
+                "kind": "literal",
+                "value": false
+              },
+              "locker_id": {
+                "kind": "instance",
+                "instance": "locker"
+              }
+            }
+          }
+        }
+      ],
+      "source": [
+        {
+          "kind": "domain",
+          "name": "parcels.locker"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.LockerId"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.ParcelCode"
+        },
+        {
+          "kind": "entity",
+          "name": "parcels.locker.Locker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.CloseLocker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.CollectParcel"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.DepositParcel"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.DiscardParcel"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.InstallLocker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.NoteParcel"
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.CloseLocker",
+            "outcome": "closed"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.CollectParcel",
+            "outcome": "collected"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.CollectParcel",
+            "outcome": "not-in-locker"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.CollectParcel",
+            "outcome": "signature-refused"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.DepositParcel",
+            "outcome": "already-deposited"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.DepositParcel",
+            "outcome": "deposited"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.DepositParcel",
+            "outcome": "locker-closed"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.DepositParcel",
+            "outcome": "no-locker"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.DiscardParcel",
+            "outcome": "no-such-parcel"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.NoteParcel",
+            "outcome": "nothing-to-note"
+          }
+        },
+        {
+          "kind": "event",
+          "name": "parcels.locker.LockerInstalled"
+        },
+        {
+          "kind": "view",
+          "name": "parcels.locker.Lockers"
+        },
+        {
+          "kind": "actor",
+          "name": "parcels.locker.Courier"
+        },
+        {
+          "kind": "actor",
+          "name": "parcels.locker.Recipient"
+        }
+      ]
+    },
+    "parcels.locker/authored/related-input": {
+      "purpose": "A closed-locker refusal guarded on the input as well is taken only when that input guard holds, so a staff parcel and any other parcel are refused differently.",
+      "steps": [
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.InstallLocker",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "site": {
+              "kind": "literal",
+              "value": "Harbour"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "locker",
+          "entity": "parcels.locker.Locker",
+          "event": "parcels.locker.LockerInstalled",
+          "field": "locker_id"
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.ReserveParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-70"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "Ada"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.ReserveParcel",
+            "outcome": "reserved"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.CloseLocker",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.CloseLocker",
+            "outcome": "closed"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.ReserveParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-71"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "Ada"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.ReserveParcel",
+            "outcome": "locker-closed"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.ReserveParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-72"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "staff"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.ReserveParcel",
+            "outcome": "staff-closed"
+          }
+        },
+        {
+          "step": "query_view",
+          "view": "parcels.locker.Parcels"
+        },
+        {
+          "step": "expect_view",
+          "view": "parcels.locker.Parcels",
+          "expectation": {
+            "expect": "contains",
+            "fields": {
+              "parcel_code": {
+                "kind": "literal",
+                "value": "PX-70"
+              },
+              "recipient": {
+                "kind": "literal",
+                "value": "Ada"
+              }
+            }
+          }
+        }
+      ],
+      "source": [
+        {
+          "kind": "domain",
+          "name": "parcels.locker"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.LockerId"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.ParcelCode"
+        },
+        {
+          "kind": "entity",
+          "name": "parcels.locker.Locker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.CloseLocker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.InstallLocker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.ReserveParcel"
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.CloseLocker",
+            "outcome": "closed"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.ReserveParcel",
+            "outcome": "locker-closed"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.ReserveParcel",
+            "outcome": "reserved"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.ReserveParcel",
+            "outcome": "staff-closed"
+          }
+        },
+        {
+          "kind": "event",
+          "name": "parcels.locker.LockerInstalled"
+        },
+        {
+          "kind": "view",
+          "name": "parcels.locker.Parcels"
+        },
+        {
+          "kind": "actor",
+          "name": "parcels.locker.Courier"
+        }
+      ]
+    },
+    "parcels.locker/authored/subject-input": {
+      "purpose": "Subject and held-state guards take their branch only when the input guard beside them holds.",
+      "steps": [
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.InstallLocker",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "site": {
+              "kind": "literal",
+              "value": "Harbour"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "locker",
+          "entity": "parcels.locker.Locker",
+          "event": "parcels.locker.LockerInstalled",
+          "field": "locker_id"
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.ParkParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-90"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "Ada"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.ParkParcel",
+            "outcome": "parked"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.FlagParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "flag": {
+              "kind": "literal",
+              "value": "later"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-90"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.FlagParcel",
+            "outcome": "flagged"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.FlagParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "flag": {
+              "kind": "literal",
+              "value": "urgent"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-90"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.FlagParcel",
+            "outcome": "flag-refused"
+          }
+        },
+        {
+          "step": "expect_error",
+          "error": "parcels.locker.FlagRefused",
+          "fields": {
+            "recipient": "Ada",
+            "site": "Harbour"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.TagParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-90"
+            },
+            "urgent": {
+              "kind": "literal",
+              "value": "Urgent"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.TagParcel",
+            "outcome": "tagged"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.TagParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-90"
+            },
+            "urgent": {
+              "kind": "literal",
+              "value": "Normal"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.TagParcel",
+            "outcome": "tag-plain"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.CollectParcel",
+          "actor": "parcels.locker.Recipient",
+          "input": {
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-90"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.CollectParcel",
+            "outcome": "collected"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.TagParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-90"
+            },
+            "urgent": {
+              "kind": "literal",
+              "value": "Urgent"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.TagParcel",
+            "outcome": "tag-refused"
+          }
+        },
+        {
+          "step": "query_view",
+          "view": "parcels.locker.Parcels"
+        },
+        {
+          "step": "expect_view",
+          "view": "parcels.locker.Parcels",
+          "expectation": {
+            "expect": "contains",
+            "fields": {
+              "note": {
+                "kind": "literal",
+                "value": "urgent"
+              },
+              "parcel_code": {
+                "kind": "literal",
+                "value": "PX-90"
+              }
+            }
+          }
+        }
+      ],
+      "source": [
+        {
+          "kind": "domain",
+          "name": "parcels.locker"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.LockerId"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.ParcelCode"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.Priority"
+        },
+        {
+          "kind": "entity",
+          "name": "parcels.locker.Locker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.CollectParcel"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.FlagParcel"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.InstallLocker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.ParkParcel"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.TagParcel"
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.CollectParcel",
+            "outcome": "collected"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.FlagParcel",
+            "outcome": "flag-refused"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.FlagParcel",
+            "outcome": "flagged"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.ParkParcel",
+            "outcome": "parked"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.TagParcel",
+            "outcome": "tag-plain"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.TagParcel",
+            "outcome": "tag-refused"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.TagParcel",
+            "outcome": "tagged"
+          }
+        },
+        {
+          "kind": "event",
+          "name": "parcels.locker.LockerInstalled"
+        },
+        {
+          "kind": "error",
+          "name": "parcels.locker.FlagRefused"
+        },
+        {
+          "kind": "view",
+          "name": "parcels.locker.Parcels"
+        },
+        {
+          "kind": "actor",
+          "name": "parcels.locker.Courier"
+        },
+        {
+          "kind": "actor",
+          "name": "parcels.locker.Recipient"
+        }
+      ]
+    },
+    "parcels.locker/authored/two-related": {
+      "purpose": "Two closed-locker refusals hold on the same locker; the model leaves the answer open, so an implementation may give either.",
+      "steps": [
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.InstallLocker",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "site": {
+              "kind": "literal",
+              "value": "Harbour"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "locker",
+          "entity": "parcels.locker.Locker",
+          "event": "parcels.locker.LockerInstalled",
+          "field": "locker_id"
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.DropParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-80"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "Ada"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.DropParcel",
+            "outcome": "dropped"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.CloseLocker",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.CloseLocker",
+            "outcome": "closed"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.DropParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-81"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "Ada"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.DropParcel",
+            "outcome": "locker-closed"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.DropParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "PX-82"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "Ada"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.DropParcel",
+            "outcome": "locker-shut"
+          }
+        },
+        {
+          "step": "query_view",
+          "view": "parcels.locker.Parcels"
+        },
+        {
+          "step": "expect_view",
+          "view": "parcels.locker.Parcels",
+          "expectation": {
+            "expect": "contains",
+            "fields": {
+              "parcel_code": {
+                "kind": "literal",
+                "value": "PX-80"
+              },
+              "recipient": {
+                "kind": "literal",
+                "value": "Ada"
+              }
+            }
+          }
+        }
+      ],
+      "source": [
+        {
+          "kind": "domain",
+          "name": "parcels.locker"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.LockerId"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.ParcelCode"
+        },
+        {
+          "kind": "entity",
+          "name": "parcels.locker.Locker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.CloseLocker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.DropParcel"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.InstallLocker"
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.CloseLocker",
+            "outcome": "closed"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.DropParcel",
+            "outcome": "dropped"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.DropParcel",
+            "outcome": "locker-closed"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.DropParcel",
+            "outcome": "locker-shut"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "kind": "event",
+          "name": "parcels.locker.LockerInstalled"
+        },
+        {
+          "kind": "view",
+          "name": "parcels.locker.Parcels"
+        },
+        {
+          "kind": "actor",
+          "name": "parcels.locker.Courier"
+        }
+      ]
+    }
+  }
+}

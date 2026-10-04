@@ -1,0 +1,648 @@
+{
+  "provenance": {
+    "suite_version": "ess-conformance/16",
+    "system": "tally",
+    "specification_version": "v1",
+    "spec_digest": "7e9745cf1af7d1bd7de798a1971e78fc976c5c90ce52c7cff0892076505664e8",
+    "contract_digest": "6e9b0031bea18c464863d69c3969ce8b5a57cd4bd7d7ca177f3dfbb879380958"
+  },
+  "scenarios": {
+    "tally.board.BumpCounter/outcome/bumped": {
+      "purpose": "`tally.board.BumpCounter` answers `bumped` for an input no other branch's guard claims",
+      "steps": [
+        {
+          "step": "execute_command",
+          "command": "tally.board.CreateCounter",
+          "actor": "tally.board.Member",
+          "input": {
+            "label": {
+              "kind": "literal",
+              "value": "Coffee"
+            },
+            "team": {
+              "kind": "literal",
+              "value": "Red"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "tally.board.CreateCounter",
+            "outcome": "created"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "counter",
+          "entity": "tally.board.Counter",
+          "event": "tally.board.CounterCreated",
+          "field": "counter_id"
+        },
+        {
+          "step": "execute_command",
+          "command": "tally.board.BumpCounter",
+          "actor": "tally.board.Member",
+          "input": {
+            "counter_id": {
+              "kind": "instance",
+              "instance": "counter"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "tally.board.BumpCounter",
+            "outcome": "bumped"
+          }
+        },
+        {
+          "step": "expect_event",
+          "event": "tally.board.CounterBumped",
+          "shape": {
+            "counter_id": {
+              "holds": "primitive",
+              "kind": "uuid"
+            }
+          }
+        },
+        {
+          "step": "expect_no_event",
+          "event": "tally.board.CounterCreated"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "tally.board.NotePinned"
+        },
+        {
+          "step": "execute_command",
+          "command": "tally.board.CreateCounter",
+          "actor": "tally.board.Member",
+          "input": {
+            "label": {
+              "kind": "literal",
+              "value": "label-1"
+            },
+            "team": {
+              "kind": "literal",
+              "value": "team-1"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "tally.board.CreateCounter",
+            "outcome": "created"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "counter-2",
+          "entity": "tally.board.Counter",
+          "event": "tally.board.CounterCreated",
+          "field": "counter_id"
+        },
+        {
+          "step": "query_view",
+          "view": "tally.board.Counters"
+        },
+        {
+          "step": "expect_view",
+          "view": "tally.board.Counters",
+          "expectation": {
+            "expect": "contains",
+            "fields": {
+              "counter_id": {
+                "kind": "instance",
+                "instance": "counter"
+              },
+              "hits": {
+                "kind": "literal",
+                "value": 1.0
+              },
+              "label": {
+                "kind": "literal",
+                "value": "Coffee"
+              }
+            }
+          }
+        },
+        {
+          "step": "expect_view",
+          "view": "tally.board.Counters",
+          "expectation": {
+            "expect": "counts",
+            "at_least": 2
+          }
+        },
+        {
+          "step": "expect_view",
+          "view": "tally.board.Counters",
+          "expectation": {
+            "expect": "ranked",
+            "order_by": [
+              "hits desc"
+            ]
+          }
+        }
+      ],
+      "source": [
+        {
+          "kind": "entity",
+          "name": "tally.board.Counter"
+        },
+        {
+          "kind": "command",
+          "name": "tally.board.BumpCounter"
+        },
+        {
+          "kind": "command",
+          "name": "tally.board.CreateCounter"
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "tally.board.BumpCounter",
+            "outcome": "bumped"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "tally.board.CreateCounter",
+            "outcome": "created"
+          }
+        },
+        {
+          "kind": "event",
+          "name": "tally.board.CounterBumped"
+        },
+        {
+          "kind": "event",
+          "name": "tally.board.CounterCreated"
+        },
+        {
+          "kind": "event",
+          "name": "tally.board.NotePinned"
+        },
+        {
+          "kind": "view",
+          "name": "tally.board.Counters"
+        },
+        {
+          "kind": "actor",
+          "name": "tally.board.Member"
+        }
+      ]
+    },
+    "tally.board.CreateCounter/outcome/created": {
+      "purpose": "`tally.board.CreateCounter` answers `created` for an input no other branch's guard claims",
+      "steps": [
+        {
+          "step": "execute_command",
+          "command": "tally.board.CreateCounter",
+          "actor": "tally.board.Member",
+          "input": {
+            "label": {
+              "kind": "literal",
+              "value": "Coffee"
+            },
+            "team": {
+              "kind": "literal",
+              "value": "Red"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "tally.board.CreateCounter",
+            "outcome": "created"
+          }
+        },
+        {
+          "step": "expect_event",
+          "event": "tally.board.CounterCreated",
+          "shape": {
+            "counter_id": {
+              "holds": "primitive",
+              "kind": "uuid"
+            }
+          }
+        },
+        {
+          "step": "expect_no_event",
+          "event": "tally.board.CounterBumped"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "tally.board.NotePinned"
+        },
+        {
+          "step": "execute_command",
+          "command": "tally.board.CreateCounter",
+          "actor": "tally.board.Member",
+          "input": {
+            "label": {
+              "kind": "literal",
+              "value": "label-1"
+            },
+            "team": {
+              "kind": "literal",
+              "value": "team-1"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "tally.board.CreateCounter",
+            "outcome": "created"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "counter-2",
+          "entity": "tally.board.Counter",
+          "event": "tally.board.CounterCreated",
+          "field": "counter_id"
+        },
+        {
+          "step": "query_view",
+          "view": "tally.board.Counters"
+        },
+        {
+          "step": "expect_view",
+          "view": "tally.board.Counters",
+          "expectation": {
+            "expect": "contains",
+            "fields": {
+              "counter_id": {
+                "kind": "observed",
+                "event": "tally.board.CounterCreated",
+                "field": "counter_id"
+              },
+              "hits": {
+                "kind": "literal",
+                "value": 0.0
+              },
+              "label": {
+                "kind": "literal",
+                "value": "Coffee"
+              }
+            }
+          }
+        },
+        {
+          "step": "expect_view",
+          "view": "tally.board.Counters",
+          "expectation": {
+            "expect": "counts",
+            "at_least": 2
+          }
+        },
+        {
+          "step": "expect_view",
+          "view": "tally.board.Counters",
+          "expectation": {
+            "expect": "ranked",
+            "order_by": [
+              "hits desc"
+            ]
+          }
+        }
+      ],
+      "source": [
+        {
+          "kind": "entity",
+          "name": "tally.board.Counter"
+        },
+        {
+          "kind": "command",
+          "name": "tally.board.CreateCounter"
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "tally.board.CreateCounter",
+            "outcome": "created"
+          }
+        },
+        {
+          "kind": "event",
+          "name": "tally.board.CounterBumped"
+        },
+        {
+          "kind": "event",
+          "name": "tally.board.CounterCreated"
+        },
+        {
+          "kind": "event",
+          "name": "tally.board.NotePinned"
+        },
+        {
+          "kind": "view",
+          "name": "tally.board.Counters"
+        },
+        {
+          "kind": "actor",
+          "name": "tally.board.Member"
+        }
+      ]
+    },
+    "tally.board.HitsByTeam/aggregate": {
+      "purpose": "`tally.board.HitsByTeam` reports every group's exact aggregates over rows this scenario made, and no empty group",
+      "steps": [
+        {
+          "step": "execute_command",
+          "command": "tally.board.CreateCounter",
+          "actor": "tally.board.Member",
+          "input": {
+            "label": {
+              "kind": "literal",
+              "value": "Coffee"
+            },
+            "team": {
+              "kind": "literal",
+              "value": "tally.board.HitsByTeam/A"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "tally.board.CreateCounter",
+            "outcome": "created"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "counter-2",
+          "entity": "tally.board.Counter",
+          "event": "tally.board.CounterCreated",
+          "field": "counter_id"
+        },
+        {
+          "step": "execute_command",
+          "command": "tally.board.CreateCounter",
+          "actor": "tally.board.Member",
+          "input": {
+            "label": {
+              "kind": "literal",
+              "value": "Coffee"
+            },
+            "team": {
+              "kind": "literal",
+              "value": "tally.board.HitsByTeam/A"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "tally.board.CreateCounter",
+            "outcome": "created"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "counter-3",
+          "entity": "tally.board.Counter",
+          "event": "tally.board.CounterCreated",
+          "field": "counter_id"
+        },
+        {
+          "step": "execute_command",
+          "command": "tally.board.CreateCounter",
+          "actor": "tally.board.Member",
+          "input": {
+            "label": {
+              "kind": "literal",
+              "value": "Coffee"
+            },
+            "team": {
+              "kind": "literal",
+              "value": "tally.board.HitsByTeam/A"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "tally.board.CreateCounter",
+            "outcome": "created"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "counter-4",
+          "entity": "tally.board.Counter",
+          "event": "tally.board.CounterCreated",
+          "field": "counter_id"
+        },
+        {
+          "step": "execute_command",
+          "command": "tally.board.CreateCounter",
+          "actor": "tally.board.Member",
+          "input": {
+            "label": {
+              "kind": "literal",
+              "value": "Coffee"
+            },
+            "team": {
+              "kind": "literal",
+              "value": "tally.board.HitsByTeam/B"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "tally.board.CreateCounter",
+            "outcome": "created"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "counter-5",
+          "entity": "tally.board.Counter",
+          "event": "tally.board.CounterCreated",
+          "field": "counter_id"
+        },
+        {
+          "step": "query_view",
+          "view": "tally.board.HitsByTeam"
+        },
+        {
+          "step": "expect_view",
+          "view": "tally.board.HitsByTeam",
+          "expectation": {
+            "expect": "contains",
+            "fields": {
+              "counters": {
+                "kind": "literal",
+                "value": 3.0
+              },
+              "hits": {
+                "kind": "literal",
+                "value": 0.0
+              },
+              "team": {
+                "kind": "literal",
+                "value": "tally.board.HitsByTeam/A"
+              }
+            }
+          }
+        },
+        {
+          "step": "expect_view",
+          "view": "tally.board.HitsByTeam",
+          "expectation": {
+            "expect": "contains",
+            "fields": {
+              "counters": {
+                "kind": "literal",
+                "value": 1.0
+              },
+              "hits": {
+                "kind": "literal",
+                "value": 0.0
+              },
+              "team": {
+                "kind": "literal",
+                "value": "tally.board.HitsByTeam/B"
+              }
+            }
+          }
+        }
+      ],
+      "source": [
+        {
+          "kind": "entity",
+          "name": "tally.board.Counter"
+        },
+        {
+          "kind": "command",
+          "name": "tally.board.CreateCounter"
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "tally.board.CreateCounter",
+            "outcome": "created"
+          }
+        },
+        {
+          "kind": "event",
+          "name": "tally.board.CounterCreated"
+        },
+        {
+          "kind": "view",
+          "name": "tally.board.HitsByTeam"
+        }
+      ]
+    },
+    "tally.board.PinNote/outcome/pinned": {
+      "purpose": "`tally.board.PinNote` answers `pinned` for an input no other branch's guard claims",
+      "steps": [
+        {
+          "step": "execute_command",
+          "command": "tally.board.PinNote",
+          "actor": "tally.board.Member",
+          "input": {
+            "text": {
+              "kind": "literal",
+              "value": "Remember the milk"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "tally.board.PinNote",
+            "outcome": "pinned"
+          }
+        },
+        {
+          "step": "expect_event",
+          "event": "tally.board.NotePinned",
+          "shape": {
+            "note_no": {
+              "holds": "primitive",
+              "kind": "integer"
+            }
+          }
+        },
+        {
+          "step": "expect_no_event",
+          "event": "tally.board.CounterBumped"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "tally.board.CounterCreated"
+        },
+        {
+          "step": "query_view",
+          "view": "tally.board.Notes"
+        },
+        {
+          "step": "expect_view",
+          "view": "tally.board.Notes",
+          "expectation": {
+            "expect": "contains",
+            "fields": {
+              "note_no": {
+                "kind": "observed",
+                "event": "tally.board.NotePinned",
+                "field": "note_no"
+              },
+              "text": {
+                "kind": "literal",
+                "value": "Remember the milk"
+              }
+            }
+          }
+        }
+      ],
+      "source": [
+        {
+          "kind": "entity",
+          "name": "tally.board.Note"
+        },
+        {
+          "kind": "command",
+          "name": "tally.board.PinNote"
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "tally.board.PinNote",
+            "outcome": "pinned"
+          }
+        },
+        {
+          "kind": "event",
+          "name": "tally.board.CounterBumped"
+        },
+        {
+          "kind": "event",
+          "name": "tally.board.CounterCreated"
+        },
+        {
+          "kind": "event",
+          "name": "tally.board.NotePinned"
+        },
+        {
+          "kind": "view",
+          "name": "tally.board.Notes"
+        },
+        {
+          "kind": "actor",
+          "name": "tally.board.Member"
+        }
+      ]
+    }
+  }
+}
