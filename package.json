@@ -11,9 +11,10 @@
     ".": { "types": "./web/index.d.ts", "default": "./web/index.js" },
     "./compose": "./web/compose.js",
     "./assets": "./web/dist/assets.js",
+    "./fonts": "./web/dist/fonts.js",
     "./schema": "./schema/ess-ui-presentation.schema.json"
   },
-  "files": ["web/index.js", "web/index.d.ts", "web/compose.js", "web/dist/assets.js", "schema/ess-ui-presentation.schema.json"],
+  "files": ["web/index.js", "web/index.d.ts", "web/compose.js", "web/dist/assets.js", "web/dist/fonts.js", "web/fonts/", "schema/ess-ui-presentation.schema.json"],
   "peerDependencies": {
     "react": ">=18"
   },

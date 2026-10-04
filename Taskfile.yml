@@ -7,6 +7,7 @@ vars:
   BIN: '{{.CARGO_TARGET_DIR | default "target"}}/debug/ess-ui'
   SCREENS: '{{.SCREENS | default (printf "%s/.cache/b10x-design/ess-ui-screens" .HOME)}}'
   DOCS_SYSTEM_PIN: acbc7a39a2a495114a507a92e0a0c4c933e81d8f
+  FONT_FILES: inter-variable-latin.woff2 fira-code-regular-latin.woff2 fira-code-semibold-latin.woff2 OFL-Inter.txt OFL-FiraCode.txt
   BILLING_REPO: --repo-url https://github.com/beyond10x/ess --repo-label GitHub --spec-root examples/billing --ref 4d6a4ecafc0feb4e11e4bee777b19c7351fa3647
 
 tasks:
@@ -41,25 +42,54 @@ tasks:
     cmds:
       - '{{.BIN}} schema --out schema/ess-ui-presentation.schema.json'
       - '{{.BIN}} assets --out web/dist/assets.js'
+      - '{{.BIN}} fonts --out web/dist/fonts.js'
 
   fresh:
-    desc: Fail when schema/ or web/dist/ is stale against its source.
+    desc: Fail when schema/ or web/dist/ is stale against its source (web/src, web/fonts).
     deps: [build]
     cmds:
       - mkdir -p out/fresh
       - '{{.BIN}} schema --out out/fresh/schema.json > /dev/null'
       - '{{.BIN}} assets --out out/fresh/assets.js > /dev/null'
+      - '{{.BIN}} fonts --out out/fresh/fonts.js > /dev/null'
       - cmp out/fresh/schema.json schema/ess-ui-presentation.schema.json
       - cmp out/fresh/assets.js web/dist/assets.js
+      - cmp out/fresh/fonts.js web/dist/fonts.js
+
+  docs-system:
+    desc: Make the pinned docs-system commit readable, from DOCS_SYSTEM (a docs-system clone) when set, otherwise by a shallow fetch into out/docs-system.
+    internal: true
+    status:
+      - test -n "$DOCS_SYSTEM" || git -C out/docs-system cat-file -e {{.DOCS_SYSTEM_PIN}}^{commit}
+    cmds:
+      - mkdir -p out/docs-system
+      - git -C out/docs-system init -q
+      - git -C out/docs-system fetch -q --depth 1 https://github.com/beyond10x/docs-system {{.DOCS_SYSTEM_PIN}}
+
+  fonts:
+    desc: Copy the latin-subset fonts and their OFL licences from the pinned docs-system commit into web/fonts/, then rewrite web/dist/fonts.js.
+    deps: [docs-system]
+    cmds:
+      - for: {var: FONT_FILES}
+        cmd: git -C "${DOCS_SYSTEM:-out/docs-system}" show {{.DOCS_SYSTEM_PIN}}:styles/static/b10x-fonts/{{.ITEM}} > web/fonts/{{.ITEM}}
+      - task: schema
 
   tokens:check:
-    desc: Compare web/src/tokens.css with styles/product-theme.css of the pinned docs-system commit (needs DOCS_SYSTEM, a docs-system clone).
-    preconditions:
-      - sh: test -n "$DOCS_SYSTEM"
-        msg: set DOCS_SYSTEM to a docs-system clone
+    desc: Fail when web/src/tokens.css, web/fonts/ or the fonts' unicode-range differ from the pinned docs-system commit.
+    deps: [docs-system]
     cmds:
-      - git -C "$DOCS_SYSTEM" show {{.DOCS_SYSTEM_PIN}}:styles/product-theme.css | sed -n '/^html\[data-theme=.light.\],/,/^}/p;/^html\[data-theme=.dark.\] {/,/^}/p' > out/tokens.pinned.css
+      - git -C "${DOCS_SYSTEM:-out/docs-system}" show {{.DOCS_SYSTEM_PIN}}:styles/product-theme.css | sed -n '/^html\[data-theme=.light.\],/,/^}/p;/^html\[data-theme=.dark.\] {/,/^}/p' > out/tokens.pinned.css
       - sed -n '/^html\[data-theme=.light.\],/,/^}/p;/^html\[data-theme=.dark.\] {/,/^}/p' web/src/tokens.css | diff - out/tokens.pinned.css
+      - git -C "${DOCS_SYSTEM:-out/docs-system}" ls-tree --name-only {{.DOCS_SYSTEM_PIN}} styles/static/b10x-fonts/ | sed 's|.*/||' | sort > out/fonts.pinned.txt
+      - echo {{.FONT_FILES}} | tr ' ' '\n' | sort | diff - out/fonts.pinned.txt
+      - ls web/fonts | sort | diff - out/fonts.pinned.txt
+      - for: {var: FONT_FILES}
+        cmd: git -C "${DOCS_SYSTEM:-out/docs-system}" show {{.DOCS_SYSTEM_PIN}}:styles/static/b10x-fonts/{{.ITEM}} | cmp - web/fonts/{{.ITEM}}
+      - |
+        git -C "${DOCS_SYSTEM:-out/docs-system}" show {{.DOCS_SYSTEM_PIN}}:src/product-site.ts | sed -n "s/^const FONT_RANGE = '\(.*\)';$/\1/p" > out/font-range.pinned.txt
+      - test -s out/font-range.pinned.txt
+      - |
+        sed -n 's/^    pub const FONT_RANGE: &str = "\(.*\)";$/\1/p' crates/ess-ui/src/page.rs | diff - out/font-range.pinned.txt
 
   scan:
     desc: Scan every tracked file for names that must not appear (b10x-gates scan-text). Skipped without a local policy; CI runs common Gates instead.
@@ -96,11 +126,12 @@ tasks:
           done
 
   check:
-    desc: fmt, clippy -D warnings, tests, schema and bundle freshness, schema validation, the name scan.
+    desc: fmt, clippy -D warnings, tests, schema and bundle freshness, tokens and fonts against the docs-system pin, schema validation, the name scan.
     cmds:
       - cargo fmt --all --check
       - cargo clippy --locked --all-targets -- -D warnings
       - cargo test --locked
       - task: fresh
+      - task: tokens:check
       - task: web:test
       - task: scan

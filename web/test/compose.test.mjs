@@ -4,12 +4,13 @@
 import { readFileSync } from 'node:fs';
 import { deepStrictEqual, strictEqual, throws } from 'node:assert';
 import * as assets from '../dist/assets.js';
-import { compose } from '../compose.js';
+import * as fonts from '../dist/fonts.js';
+import { compose, hostFonts } from '../compose.js';
 
 const [dataPath, htmlPath] = process.argv.slice(2);
 const data = JSON.parse(readFileSync(dataPath, 'utf8'));
 const html = readFileSync(htmlPath, 'utf8');
-const composed = compose(data, assets);
+const composed = compose(data, assets, { fonts: fonts.css });
 
 const split = (doc) => {
   const parts = {};
@@ -27,4 +28,30 @@ deepStrictEqual(a.parts['ess-sim'], b.parts['ess-sim'], 'ess-sim differs');
 throws(() => compose({ format: 'other' }, assets));
 const dark = compose(data, assets, { theme: 'dark' });
 strictEqual(dark.includes('window.ESS_UI_THEME="dark"'), true, 'a theme is passed to the document');
+
+// Fonts: the page embeds every face as a data: URL; without fonts the document declares none.
+strictEqual((composed.match(/@font-face\{/g) || []).length, 3, 'the page embeds three faces');
+strictEqual(/src:url\("(?!data:font\/woff2;base64,)/.test(composed), false, 'no face is loaded from a URL');
+strictEqual(composed.includes('SIL OPEN FONT LICENSE Version 1.1'), true, 'the OFL licences are embedded');
+strictEqual(dark.includes('@font-face'), false, 'without fonts the document declares no face');
+
+// hostFonts: the host's faces are taken with absolute URLs, and only when both families are there.
+const face = (family, url) => ({
+  type: 5,
+  style: { getPropertyValue: (p) => (p === 'font-family' ? `"${family}"` : '') },
+  cssText: `@font-face { font-family: "${family}"; src: url("${url}") format("woff2"); }`,
+});
+const sheet = (rules, href = null) => ({ href, cssRules: rules });
+const hostDoc = (sheets) => ({ baseURI: 'https://example.org/ess/docs/page', styleSheets: sheets });
+const both = hostFonts(hostDoc([
+  { href: 'https://cdn.example.org/x.css', get cssRules() { throw new Error('cross-origin'); } },
+  sheet([{ type: 1 }, face('Inter', '/ess/b10x-fonts/inter-variable-latin.woff2')]),
+  sheet([face('Fira Code', 'fonts/fira.woff2')], 'https://example.org/ess/assets/site.css'),
+]));
+strictEqual(both.includes('url("https://example.org/ess/b10x-fonts/inter-variable-latin.woff2")'), true, 'a root-relative URL is made absolute against the page');
+strictEqual(both.includes('url("https://example.org/ess/assets/fonts/fira.woff2")'), true, 'a relative URL is resolved against its stylesheet');
+strictEqual(hostFonts(hostDoc([sheet([face('Inter', '/i.woff2')])])), null, 'one family alone is not enough');
+strictEqual(hostFonts(undefined), null, 'no document, no host fonts');
+const viaHost = compose(data, assets, { fonts: both });
+strictEqual(viaHost.includes('data:font/woff2'), false, 'host fonts replace the embedded ones');
 console.log(`ok   compose: the React wrapper's document equals ${htmlPath} (${composed.length} bytes)`);
