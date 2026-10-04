@@ -17,8 +17,9 @@ body.tab-demo:not(.present)>#demo{flex:1 1 auto;min-height:0}
 body.present #demo.present-host{display:grid;position:fixed;top:0;left:0;right:0;bottom:58px;height:auto;min-height:0;padding:0;overflow:hidden;z-index:40}
 /* ---------- demo control panel ---------- */
 .demo{display:grid;grid-template-columns:170px minmax(0,1fr) 380px;grid-template-rows:auto minmax(0,1fr) clamp(84px,16vh,170px);height:100%;min-height:0;margin:0}
-.dm-top{grid-column:1/-1;display:flex;flex-wrap:nowrap;overflow:hidden;align-items:center;gap:10px;padding:7px 14px;border-bottom:1px solid var(--line);background:var(--panel-solid)}
-.dm-top #dm-scrub{flex:1;min-width:60px;accent-color:var(--cyan)}
+.dm-top{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:7px 14px;border-bottom:1px solid var(--line);background:var(--panel-solid);min-width:0}
+.dm-top>*{flex:none}
+.dm-top #dm-scrub{flex:1 1 140px;min-width:120px;accent-color:var(--cyan)}
 .dm-btns{display:inline-flex;gap:4px}.dm-btns button{min-width:34px}
 .dm-clock{font:12px var(--mono);color:var(--text2);white-space:nowrap}.dm-clock b{color:var(--text)}
 .dm-follow{font:12px var(--mono);color:var(--text2);display:inline-flex;gap:4px;align-items:center}
@@ -32,11 +33,14 @@ body.present #demo.present-host{display:grid;position:fixed;top:0;left:0;right:0
 .dm-actor{display:flex;flex-direction:column;align-items:flex-start;text-align:left;border:1px solid color-mix(in srgb,var(--c) 55%,transparent);background:var(--chip-bg);transition:background .3s ease,box-shadow .3s ease}
 .dm-actor b{color:var(--c);font:700 12.5px var(--mono)}.dm-actor span{font:10.5px var(--mono);color:var(--dim)}
 .dm-actor.acting{background:color-mix(in srgb,var(--c) 18%,transparent);box-shadow:0 0 0 2px var(--c)}
-.dm-stage{grid-row:2/3;position:relative;overflow:hidden;background:var(--bg)}
-.dm-canvas{width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+.dm-stage{grid-row:2/3;position:relative;overflow:hidden;background:var(--bg);display:flex;flex-direction:column;min-width:0}
+.dm-canvas{flex:1 1 0;width:100%;height:auto;min-height:0;display:block;cursor:grab;touch-action:none}
 .dm-canvas.dragging{cursor:grabbing}
-.dm-caption{position:absolute;left:14px;top:10px;right:14px;z-index:2;font:12.5px var(--mono);color:var(--text);pointer-events:none;
-text-shadow:0 0 6px var(--bg),0 0 2px var(--bg)}
+/* the caption is a band of its own above the canvas, one line tall (two below 800px), so it never
+   covers a frame and its length never resizes the canvas under the camera */
+.dm-caption{flex:none;box-sizing:border-box;height:calc(1.5em + 14px);padding:7px 14px;line-height:1.5;border-bottom:1px solid var(--line);
+background:var(--panel-solid);font:12.5px var(--mono);color:var(--text);overflow:hidden}
+.dm-caption .cap-t{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dm-caption .cap-err{color:var(--rose)}.dm-caption .cap-ok{color:var(--green)}
 .dm-colbox{fill:color-mix(in srgb,var(--cyan) 3%,transparent);stroke:color-mix(in srgb,var(--cyan) 22%,transparent);stroke-dasharray:4 5}
 .dm-comp{fill:var(--cyan);font-size:15px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}

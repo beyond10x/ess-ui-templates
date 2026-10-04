@@ -35,9 +35,23 @@ function fitVB(){const r=svg.getBoundingClientRect(),ar=(r.width||1)/(r.height||
 function ease(to,ms){cancelAnimationFrame(camAnim);if(reduce.matches||!ms){setVB(to);return;}const from=vb.slice(),t0=performance.now();
  const tick=now=>{const k=Math.min(1,(now-t0)/ms),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;setVB(from.map((f,i)=>f+(to[i]-f)*e));if(k<1)camAnim=requestAnimationFrame(tick);};camAnim=requestAnimationFrame(tick);}
 function frameOf(e){return svg.querySelector('.dm-frame[data-me="'+CSS.escape(e)+'"]');}
-function focusFrame(e){const f=frameOf(e);if(!f)return;const x=+f.dataset.x,y=+f.dataset.y,w=+f.dataset.w,h=+f.dataset.h;
- const r=svg.getBoundingClientRect(),ar=(r.width||1)/(r.height||1);let W=Math.max(w*1.8,700),H=Math.max(h*1.5,420);
- if(W/H>ar)H=W/ar;else W=H*ar;W=Math.min(W,full[2]*1.05);H=W/ar;ease([x+w/2-W/2,y+h/2-H/2,W,H],700/Math.max(1,st.speed/2));}
+/* follow: the whole component column that holds the entity, padded, is inside the viewport; the
+   view only ever grows from that box to match the canvas's aspect ratio, never shrinks below it */
+function focusBox(f){let x=+f.dataset.x,y=+f.dataset.y,w=+f.dataset.w,h=+f.dataset.h;
+ const col=[...svg.querySelectorAll('.dm-colbox')].find(b=>{const bx=+b.getAttribute('x'),bw=+b.getAttribute('width');return bx<=x+.5&&x+w<=bx+bw+.5;});
+ if(col){const bx=+col.getAttribute('x'),by=+col.getAttribute('y'),bw=+col.getAttribute('width'),bh=+col.getAttribute('height');
+  const x2=Math.max(x+w,bx+bw),y2=Math.max(y+h,by+bh);x=Math.min(x,bx);y=Math.min(y,by);w=x2-x;h=y2-y;}
+ return[x,y,w,h];}
+function focusFrame(e,ms){const f=frameOf(e);if(!f)return false;const[x,y,w,h]=focusBox(f),P=24;
+ const r=svg.getBoundingClientRect(),ar=(r.width||1)/(r.height||1);let W=Math.max(w+2*P,360),H=Math.max(h+2*P,240);
+ if(W/H>ar)H=W/ar;else W=H*ar;
+ /* when the whole canvas fits at nearly the same scale, show all of it rather than half a neighbour */
+ const fit=fitVB(),to=fit[2]<=W/0.85?fit:[x+w/2-W/2,y+h/2-H/2,W,H];
+ ease(to,ms==null?700/Math.max(1,st.speed/2):ms);return true;}
+/* the entity the step at k acted on: the last command at or before it that changed or refused one */
+function focusAt(k){const tr=st.trace;if(!tr)return null;for(let i=Math.min(k,tr.steps.length)-1;i>=0;i--){const s=tr.steps[i];if(s.k!=='execute_command')continue;
+ const e=((s.d||[])[0]||[])[0]||s.se;if(e&&frameOf(e))return e;}return null;}
+function reframe(ms){const e=st.follow&&focusAt(st.k);if(!(e&&focusFrame(e,ms)))ease(fitVB(),ms||0);}
 function toSvg(evt){const pt=svg.createSVGPoint();pt.x=evt.clientX;pt.y=evt.clientY;return pt.matrixTransform(svg.getScreenCTM().inverse());}
 svg.addEventListener('wheel',e=>{e.preventDefault();const p=toSvg(e),f=Math.exp(e.deltaY*0.0015);const[x,y,w,h]=vb;
  setVB([p.x-(p.x-x)*f,p.y-(p.y-y)*f,w*f,h*f]);},{passive:false});
@@ -208,18 +222,20 @@ const picker=(function(){
 
 /* ---------- playback ---------- */
 function slugSVG(e,t,a,b){return 'dm-'+slug(e)+'-'+slug(t)+'-'+slug(a)+'-'+slug(b);}
-function caption(s,i){const c=$('#dm-caption');if(!s){c.innerHTML=st.trace&&!st.trace.steps.length?'<span class="cap-err">This run has no steps: no command input could be built from values ESS gives. Generate with --suite to use its literals.</span>':'';return;}
- if(s.k==='execute_command')c.innerHTML='#'+(i+1)+' <b>'+escH(s.a?short(s.a):'(no actor)')+'</b> → '+escH((s.comp||[]).join(', ')||'no component')+' : <b>'+escH(short(s.c))+'</b> → '+
+function caption(s,i){const c=$('#dm-caption');let h;
+ if(!s)h=st.trace&&!st.trace.steps.length?'<span class="cap-err">This run has no steps: no command input could be built from values ESS gives. Generate with --suite to use its literals.</span>':'';
+ else if(s.k==='execute_command')h='#'+(i+1)+' <b>'+escH(s.a?short(s.a):'(no actor)')+'</b> → '+escH((s.comp||[]).join(', ')||'no component')+' : <b>'+escH(short(s.c))+'</b> → '+
   (s.e?'<span class="cap-err">'+escH(short(s.e))+'</span>':s.o?'<span class="cap-ok">'+escH(s.o)+'</span>':'<span class="cap-err">no declared outcome</span>')+(s.note?' <span class="dim">'+escH(s.note)+'</span>':'');
- else c.innerHTML='#'+(i+1)+' '+escH(s.k)+': '+(s.u?'not evaluable':s.ok?'<span class="cap-ok">met</span>':s.ok===false?'<span class="cap-err">unmet</span>':'')+' <span class="dim">'+escH(s.t||'')+'</span>';}
+ else h='#'+(i+1)+' '+escH(s.k)+': '+(s.u?'not evaluable':s.ok?'<span class="cap-ok">met</span>':s.ok===false?'<span class="cap-err">unmet</span>':'')+' <span class="dim">'+escH(s.t||'')+'</span>';
+ c.innerHTML='<span class="cap-t">'+h+'</span>';c.title=c.textContent;}
 function chrome(){const tr=st.trace,s=tr.steps[st.k-1];$('#dm-step').textContent=st.k;$('#dm-n').textContent=tr.steps.length;$('#dm-scrub').max=tr.steps.length;$('#dm-scrub').value=st.k;
  const state=stateAt(tr,st.k);$('#dm-time').textContent=state.at?state.at+' · ':'';
  $$('.dm-actor').forEach(b=>b.classList.toggle('acting',!!(s&&s.k==='execute_command'&&s.a===b.dataset.actor)));
  $$('.dm-col').forEach(c=>c.classList.toggle('lit',!!(s&&s.k==='execute_command'&&(s.comp||[]).includes(c.dataset.comp))));
  caption(s,st.k-1);renderDock();moveCursor();renderPass();if(window.essState)window.essState();}
-function seek(k){st.gen++;clearTimeout(st.timer);st.k=Math.max(0,Math.min(st.trace.steps.length,k));$$('.edge.fire,.dm-tl.fire',svg).forEach(x=>x.classList.remove('fire'));
+function seek(k,ms){st.gen++;clearTimeout(st.timer);st.k=Math.max(0,Math.min(st.trace.steps.length,k));$$('.edge.fire,.dm-tl.fire',svg).forEach(x=>x.classList.remove('fire'));
  $$('.dm-frame.changed',svg).forEach(x=>x.classList.remove('changed'));$$('.tok.refused',tokL).forEach(t=>t.classList.remove('refused','shake'));
- renderTokens(stateAt(st.trace,st.k));chrome();}
+ renderTokens(stateAt(st.trace,st.k));chrome();if(st.follow)reframe(ms==null?300:ms);}
 function tween(g,path,ms,done){if(!path||reduce.matches||!ms){done();return;}const L=path.getTotalLength(),t0=performance.now(),gen=st.gen;
  const tick=now=>{if(gen!==st.gen)return;const k=Math.min(1,(now-t0)/ms),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2,p=path.getPointAtLength(e*L);place(g,p.x,p.y);if(k<1)requestAnimationFrame(tick);else done();};requestAnimationFrame(tick);}
 function forward(){const tr=st.trace;if(st.k>=tr.steps.length)return false;const s=tr.steps[st.k],prev=stateAt(tr,st.k);st.k++;st.gen++;
@@ -244,22 +260,22 @@ function loop(){const gen=st.gen;st.timer=setTimeout(()=>{if(!st.playing)return;
 function play(){if(st.k>=st.trace.steps.length)seek(0);st.playing=true;$('#dm-play').textContent='Pause';loop();if(window.essState)window.essState();}
 function pause(){st.playing=false;clearTimeout(st.timer);$('#dm-play').textContent='Play';if(window.essState)window.essState();}
 function load(id,k){const tr=byId[id]||byId[S.demo]||S.traces[0];if(!tr)return;pause();st.trace=tr;st.sel=null;tokL.innerHTML='';picker.set(tr);
- renderLanes(tr);seek(k||0);}
+ renderLanes(tr);seek(k||0,0);}
 function setSpeed(v){st.speed=+v||1;$$('.speedseg[data-a="dm-speed"] [data-speed]').forEach(b=>b.classList.toggle('on',+b.dataset.speed===st.speed));if(window.essState)window.essState();}
 $$('.speedseg[data-a="dm-speed"] [data-speed]').forEach(b=>b.addEventListener('click',()=>{setSpeed(b.dataset.speed);if(window.essSpeed)window.essSpeed(st.speed);}));
 root.addEventListener('click',e=>{const b=e.target.closest('[data-dm]');if(!b)return;const a=b.dataset.dm;
  if(a==='play')st.playing?pause():play();if(a==='next'){pause();forward();}if(a==='prev'){pause();seek(st.k-1);}if(a==='first'){pause();seek(0);}if(a==='fit')ease(fitVB(),400);});
 $('#dm-scrub').addEventListener('input',e=>{pause();seek(+e.target.value);});
-$('#dm-follow').addEventListener('change',e=>{st.follow=e.target.checked;if(window.essState)window.essState();});
+$('#dm-follow').addEventListener('change',e=>{st.follow=e.target.checked;if(st.follow)reframe(400);if(window.essState)window.essState();});
 document.addEventListener('keydown',e=>{if(!document.body.classList.contains('tab-demo')||document.body.classList.contains('present'))return;
  if(e.target.closest&&e.target.closest('input,select,textarea,.rp'))return;
  if((e.key==='r'||e.key==='R')&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();picker.show();return;}
  if(e.key===' '){e.preventDefault();st.playing?pause():play();}if(e.key==='ArrowRight'){e.preventDefault();pause();forward();}if(e.key==='ArrowLeft'){e.preventDefault();pause();seek(st.k-1);}});
 root.addEventListener('click',e=>{const a=e.target.closest('[data-model-ref]');if(a&&window.ESS){e.preventDefault();window.ESS.go(a.dataset.modelRef);}});
 window.essDemo={load,seek,play,pause,setSpeed,forward,pick:()=>picker.show(),get:()=>({trace:st.trace&&st.trace.id,k:st.k,speed:st.speed,playing:st.playing,follow:st.follow}),
- setFollow:v=>{st.follow=!!v;$('#dm-follow').checked=st.follow;},fit:()=>ease(fitVB(),0),traces:S.traces.map(t=>({id:t.id,title:t.title,group:t.group,origin:t.origin}))};
-load(S.demo);requestAnimationFrame(()=>ease(fitVB(),0));
-if('ResizeObserver' in window){let lastW=0,lastH=0;new ResizeObserver(es=>{const r=es[0].contentRect;if(r.width>0&&r.height>0&&(Math.abs(r.width-lastW)>2||Math.abs(r.height-lastH)>2)){lastW=r.width;lastH=r.height;ease(fitVB(),0);}}).observe(svg);}
-else window.addEventListener('resize',()=>ease(fitVB(),0));
+ setFollow:v=>{st.follow=!!v;$('#dm-follow').checked=st.follow;},fit:()=>ease(fitVB(),0),reframe:()=>reframe(0),traces:S.traces.map(t=>({id:t.id,title:t.title,group:t.group,origin:t.origin}))};
+load(S.demo);requestAnimationFrame(()=>reframe(0));
+if('ResizeObserver' in window){let lastW=0,lastH=0;new ResizeObserver(es=>{const r=es[0].contentRect;if(r.width>0&&r.height>0&&(Math.abs(r.width-lastW)>2||Math.abs(r.height-lastH)>2)){lastW=r.width;lastH=r.height;reframe(0);}}).observe(svg);}
+else window.addEventListener('resize',()=>reframe(0));
 window.essDemoAutoplay=()=>{if(!reduce.matches)play();};
 })();
