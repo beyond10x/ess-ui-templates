@@ -1,0 +1,106 @@
+version: '3'
+
+env:
+  CARGO_INCREMENTAL: '0'
+
+vars:
+  BIN: '{{.CARGO_TARGET_DIR | default "target"}}/debug/ess-ui'
+  SCREENS: '{{.SCREENS | default (printf "%s/.cache/b10x-design/ess-ui-screens" .HOME)}}'
+  DOCS_SYSTEM_PIN: 929f9653d14212d0595e8dbc704a4e6a61cabd9e
+  BILLING_REPO: --repo-url https://github.com/beyond10x/ess --repo-label GitHub --spec-root examples/billing --ref 4d6a4ecafc0feb4e11e4bee777b19c7351fa3647
+
+tasks:
+  build:
+    desc: Build the ess-ui binary.
+    cmds:
+      - cargo build --locked -p ess-ui
+
+  fixtures:
+    desc: Compile the fixture specifications with the `ess` CLI into IR, suites and authored scenarios.
+    cmds:
+      - for: [billing, parcel-locker, tally]
+        cmd: |
+          set -e
+          d=fixtures/{{.ITEM}}
+          scen=$d/scenarios; [ -d "$scen" ] || scen=$d/spec/scenarios
+          ess specify compile --path $d/spec --format json --out $d/ir.json > /dev/null
+          ess verify conform synthesize --path $d/spec --out $d/suite.json > $d/synthesize.log 2>&1
+          ess verify conform author --path $d/spec --scenarios $scen --out $d/authored.json > /dev/null 2>&1
+
+  page:
+    desc: Write the billing and parcel-locker pages into out/.
+    deps: [build]
+    cmds:
+      - '{{.BIN}} page --ir fixtures/billing/ir.json --spec-dir fixtures/billing/spec --suite fixtures/billing/suite.json --scenarios fixtures/billing/authored.json --scenario-dir fixtures/billing/scenarios --synth-log fixtures/billing/synthesize.log {{.BILLING_REPO}} --out out/billing.html'
+      - '{{.BIN}} page --ir fixtures/parcel-locker/ir.json --spec-dir fixtures/parcel-locker/spec --suite fixtures/parcel-locker/suite.json --scenarios fixtures/parcel-locker/authored.json --synth-log fixtures/parcel-locker/synthesize.log --ref fixture --out out/parcel-locker.html'
+      - '{{.BIN}} data --ir fixtures/billing/ir.json --spec-dir fixtures/billing/spec --suite fixtures/billing/suite.json --scenarios fixtures/billing/authored.json --scenario-dir fixtures/billing/scenarios --synth-log fixtures/billing/synthesize.log {{.BILLING_REPO}} --out out/billing.data.json'
+
+  schema:
+    desc: Regenerate schema/ and the web bundle module from the sources.
+    deps: [build]
+    cmds:
+      - '{{.BIN}} schema --out schema/ess-ui-presentation.schema.json'
+      - '{{.BIN}} assets --out web/dist/assets.js'
+
+  fresh:
+    desc: Fail when schema/ or web/dist/ is stale against its source.
+    deps: [build]
+    cmds:
+      - mkdir -p out/fresh
+      - '{{.BIN}} schema --out out/fresh/schema.json > /dev/null'
+      - '{{.BIN}} assets --out out/fresh/assets.js > /dev/null'
+      - cmp out/fresh/schema.json schema/ess-ui-presentation.schema.json
+      - cmp out/fresh/assets.js web/dist/assets.js
+
+  tokens:check:
+    desc: Compare web/src/tokens.css with styles/product-theme.css of the pinned docs-system commit (needs DOCS_SYSTEM, a docs-system clone).
+    preconditions:
+      - sh: test -n "$DOCS_SYSTEM"
+        msg: set DOCS_SYSTEM to a docs-system clone
+    cmds:
+      - git -C "$DOCS_SYSTEM" show {{.DOCS_SYSTEM_PIN}}:styles/product-theme.css | sed -n '/^html\[data-theme=.light.\],/,/^}/p;/^html\[data-theme=.dark.\] {/,/^}/p' > out/tokens.pinned.css
+      - sed -n '/^html\[data-theme=.light.\],/,/^}/p;/^html\[data-theme=.dark.\] {/,/^}/p' web/src/tokens.css | diff - out/tokens.pinned.css
+
+  scan:
+    desc: Scan every tracked file for names that must not appear (b10x-gates scan-text). Skipped without a local policy; CI runs common Gates instead.
+    vars:
+      POLICY: '{{.GATES_POLICY | default (printf "%s/beyond10x/gates-policy/policy.json" .HOME)}}'
+    cmds:
+      - |
+        if [ ! -f "{{.POLICY}}" ]; then echo "scan: no policy at {{.POLICY}}, skipped"; exit 0; fi
+        git ls-files -co --exclude-standard | grep -v '^out/' | xargs b10x-gates scan-text --policy "{{.POLICY}}"
+
+  web:test:
+    desc: Compose the React wrapper's document from data.json with node and compare it with the Rust page.
+    deps: [page]
+    cmds:
+      - node web/test/compose.test.mjs out/billing.data.json out/billing.html
+      - node web/test/picker.test.mjs out/billing.data.json out
+
+  screenshots:
+    desc: Headless-Chrome screenshots of the billing page, 1440 and 390 wide, light and dark, Demo and Model.
+    deps: [page]
+    cmds:
+      - mkdir -p {{.SCREENS}}
+      - node -e "const fs=require('fs');fs.writeFileSync('out/billing-picker.html',fs.readFileSync('out/billing.html','utf8').replace('</body></html>','<script>addEventListener(\"load\",()=>setTimeout(()=>essDemo.pick(),400))</script></body></html>'))"
+      - for: [light, dark]
+        cmd: |
+          for w in 1440 390; do
+            h=$([ $w = 1440 ] && echo 1000 || echo 844)
+            google-chrome-stable --headless=new --disable-gpu --hide-scrollbars --window-size=$w,$h --virtual-time-budget=9000 \
+              --screenshot={{.SCREENS}}/billing-demo-{{.ITEM}}-$w.png "file://$PWD/out/billing.html?theme={{.ITEM}}#!tab=demo&step=6" 2>/dev/null
+            google-chrome-stable --headless=new --disable-gpu --hide-scrollbars --window-size=$w,$((h*3)) --virtual-time-budget=4000 \
+              --screenshot={{.SCREENS}}/billing-model-{{.ITEM}}-$w.png "file://$PWD/out/billing.html?theme={{.ITEM}}&tab=model" 2>/dev/null
+            google-chrome-stable --headless=new --disable-gpu --hide-scrollbars --window-size=$w,$h --virtual-time-budget=9000 \
+              --screenshot={{.SCREENS}}/billing-demo-picker-{{.ITEM}}-$w.png "file://$PWD/out/billing-picker.html?theme={{.ITEM}}#!tab=demo&step=6" 2>/dev/null
+          done
+
+  check:
+    desc: fmt, clippy -D warnings, tests, schema and bundle freshness, schema validation, the name scan.
+    cmds:
+      - cargo fmt --all --check
+      - cargo clippy --locked --all-targets -- -D warnings
+      - cargo test --locked
+      - task: fresh
+      - task: web:test
+      - task: scan

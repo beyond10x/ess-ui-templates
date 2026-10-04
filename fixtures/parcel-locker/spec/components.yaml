@@ -1,0 +1,31 @@
+components:
+  - component: locker-service
+    summary: Runs the parcel lockers and the parcels deposited in them.
+    owns:
+      domains:
+        - parcels.locker
+    accepts:
+      commands:
+        - parcels.locker.InstallLocker
+        - parcels.locker.CloseLocker
+        - parcels.locker.DepositParcel
+        - parcels.locker.NoteParcel
+        - parcels.locker.CollectParcel
+        - parcels.locker.DiscardParcel
+        - parcels.locker.RegisterParcel
+        - parcels.locker.ReserveParcel
+        - parcels.locker.DropParcel
+        - parcels.locker.FlagParcel
+        - parcels.locker.TagParcel
+        - parcels.locker.ParkParcel
+        - parcels.locker.RushParcel
+        - parcels.locker.StampParcel
+    publishes:
+      events:
+        - parcels.locker.LockerInstalled
+        - parcels.locker.LockerClosed
+        - parcels.locker.ParcelDeposited
+        - parcels.locker.ParcelNoted
+        - parcels.locker.ParcelCollected
+        - parcels.locker.ParcelDiscarded
+    reached_by: network

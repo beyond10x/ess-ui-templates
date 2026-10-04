@@ -1,0 +1,42 @@
+type: ess-scenario/1
+domain: parcels.locker
+scenario: minted-code
+summary: Parcels registered without a code are created under distinct codes the system mints, and a minted code skips one a caller already supplied.
+
+arrange:
+  - instance: locker
+    entity: parcels.locker.Locker
+
+timeline:
+  - at: 2026-09-30T10:00:00Z
+    command: parcels.locker.InstallLocker
+    actor: parcels.locker.Courier
+    input: {site: Harbour}
+    outcome: installed
+    capture: {instance: locker, event: parcels.locker.LockerInstalled, field: locker_id}
+
+  - at: 2026-09-30T10:00:01Z
+    command: parcels.locker.RegisterParcel
+    actor: parcels.locker.Courier
+    input: {locker_id: {$instance: locker}, recipient: Grace}
+    outcome: registered
+
+  - at: 2026-09-30T10:00:02Z
+    command: parcels.locker.RegisterParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: 00000000-0000-4000-8000-000000000003, locker_id: {$instance: locker}, recipient: Heidi}
+    outcome: registered
+
+  - at: 2026-09-30T10:00:03Z
+    command: parcels.locker.RegisterParcel
+    actor: parcels.locker.Courier
+    input: {locker_id: {$instance: locker}, recipient: Ivan}
+    outcome: registered
+
+assert:
+  - view: parcels.locker.Parcels
+    contains: {recipient: Grace}
+  - view: parcels.locker.Parcels
+    contains: {recipient: Heidi}
+  - view: parcels.locker.Parcels
+    contains: {recipient: Ivan}

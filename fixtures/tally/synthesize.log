@@ -1,0 +1,5 @@
+note: `tally.board.BumpCounter` declares no not-found and no `wrong_state` outcome, so what it answers when its `instance:` names no record is undeclared and not checked
+note: every declared actor may invoke `tally.board.BumpCounter`, so no actor is refused it and no `tally.board.BumpCounter/grant/denied` scenario is owed
+note: every declared actor may invoke `tally.board.CreateCounter`, so no actor is refused it and no `tally.board.CreateCounter/grant/denied` scenario is owed
+note: every declared actor may invoke `tally.board.PinNote`, so no actor is refused it and no `tally.board.PinNote/grant/denied` scenario is owed
+4 scenario(s) (0 authored), 0 refusal(s), written to fixtures/tally/suite.json

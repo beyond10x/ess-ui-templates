@@ -1,0 +1,6 @@
+format: ess/19
+system: tally
+version: v1
+
+domains:
+  - tally.board

@@ -1,0 +1,31 @@
+[workspace]
+resolver = "2"
+members = ["crates/ess-ui"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+license = "Apache-2.0"
+repository = "https://github.com/beyond10x/ess-ui-templates"
+publish = false
+
+[workspace.dependencies]
+ess-primitives = { git = "https://github.com/beyond10x/ess", rev = "4d6a4ecafc0feb4e11e4bee777b19c7351fa3647" }
+ess-domain = { git = "https://github.com/beyond10x/ess", rev = "4d6a4ecafc0feb4e11e4bee777b19c7351fa3647" }
+ess-compiler = { git = "https://github.com/beyond10x/ess", rev = "4d6a4ecafc0feb4e11e4bee777b19c7351fa3647" }
+ess-conformance = { git = "https://github.com/beyond10x/ess", rev = "4d6a4ecafc0feb4e11e4bee777b19c7351fa3647" }
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+sha2 = "0.11"
+schemars = "0.8"
+jsonschema = { version = "0.52.1", default-features = false }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }

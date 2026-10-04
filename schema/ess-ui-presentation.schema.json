@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Presentation",
+  "description": "The presentation data: what the page embeds, and what `ess-ui data` writes.",
+  "type": "object",
+  "required": [
+    "body",
+    "body_class",
+    "document_title",
+    "format",
+    "generator",
+    "ir_sha256",
+    "model",
+    "sim",
+    "system",
+    "title",
+    "unrendered",
+    "version"
+  ],
+  "properties": {
+    "body": {
+      "description": "The body's markup: the app bar, the Demo, the Model tab, the inspector and the overlays.",
+      "type": "string"
+    },
+    "body_class": {
+      "description": "Classes of `<body>`: the landing tab, and presentation mode.",
+      "type": "string"
+    },
+    "document_title": {
+      "description": "The `<title>` of the document.",
+      "type": "string"
+    },
+    "format": {
+      "description": "Always `ess-ui-presentation/1`.",
+      "type": "string"
+    },
+    "generator": {
+      "description": "The generator and its version.",
+      "type": "string"
+    },
+    "ir_sha256": {
+      "description": "sha256 of the IR bytes.",
+      "type": "string"
+    },
+    "model": {
+      "description": "The model the scripts read (`#ess-model`): declarations, lifecycles, anchors."
+    },
+    "sim": {
+      "description": "The baked simulation the Demo plays (`#ess-sim`)."
+    },
+    "system": {
+      "description": "The system's name.",
+      "type": "string"
+    },
+    "title": {
+      "description": "The page title.",
+      "type": "string"
+    },
+    "unrendered": {
+      "description": "What the page does not draw.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "version": {
+      "description": "The specification version.",
+      "type": "string"
+    }
+  }
+}
