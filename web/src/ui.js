@@ -14,7 +14,7 @@ function tab(name){if(demoOff)name='model';const was=body.classList.contains('ta
  body.classList.toggle('tab-demo',name==='demo');body.classList.toggle('tab-model',name==='model');
  $$('.ab-tabs [data-tab]').forEach(b=>{b.classList.toggle('on',b.dataset.tab===name);b.setAttribute('aria-selected',b.dataset.tab===name);});
  if(name==='model'&&window.essDemo)window.essDemo.pause();
- if(name==='demo'&&window.essDemo)window.essDemo.fit();
+ if(name==='demo'&&window.essDemo)window.essDemo.reframe();
  if(body.classList.contains('present')&&window.ESS&&window.ESS.showSlide)window.ESS.showSlide(window.ESS.slide()-1);
  writeState();}
 window.essTab=tab;
