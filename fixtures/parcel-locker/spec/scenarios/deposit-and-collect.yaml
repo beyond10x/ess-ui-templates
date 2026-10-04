@@ -1,0 +1,50 @@
+type: ess-scenario/1
+domain: parcels.locker
+scenario: deposit-and-collect
+summary: A courier deposits two parcels, notes one, discards the other, and the recipient collects the first without a signature.
+
+arrange:
+  - instance: locker
+    entity: parcels.locker.Locker
+
+timeline:
+  - at: 2026-09-29T09:00:00Z
+    command: parcels.locker.InstallLocker
+    actor: parcels.locker.Courier
+    input: {site: North Station}
+    outcome: installed
+    capture: {instance: locker, event: parcels.locker.LockerInstalled, field: locker_id}
+
+  - at: 2026-09-29T09:00:01Z
+    command: parcels.locker.DepositParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-1, locker_id: {$instance: locker}, recipient: Ada}
+    outcome: deposited
+
+  - at: 2026-09-29T09:00:02Z
+    command: parcels.locker.DepositParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-2, locker_id: {$instance: locker}, recipient: Grace}
+    outcome: deposited
+
+  - at: 2026-09-29T09:00:03Z
+    command: parcels.locker.NoteParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-1, note: leave with the attendant}
+    outcome: noted
+
+  - at: 2026-09-29T09:00:04Z
+    command: parcels.locker.DiscardParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-2}
+    outcome: discarded
+
+  - at: 2026-09-29T09:00:05Z
+    command: parcels.locker.CollectParcel
+    actor: parcels.locker.Recipient
+    input: {parcel_code: PX-1}
+    outcome: collected
+
+assert:
+  - view: parcels.locker.Parcels
+    contains: {parcel_code: PX-1, recipient: Ada, note: leave with the attendant}

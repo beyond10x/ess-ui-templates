@@ -1,0 +1,50 @@
+type: ess-scenario/1
+domain: parcels.locker
+scenario: precedence
+summary: Input-guarded refusals answer before a related row and before an accepting guard, and a code the caller may supply is refused when sent twice.
+
+arrange:
+  - instance: locker
+    entity: parcels.locker.Locker
+
+timeline:
+  - at: 2026-09-29T11:00:00Z
+    command: parcels.locker.InstallLocker
+    actor: parcels.locker.Courier
+    input: {site: Harbour}
+    outcome: installed
+    capture: {instance: locker, event: parcels.locker.LockerInstalled, field: locker_id}
+
+  - at: 2026-09-29T11:00:01Z
+    command: parcels.locker.RegisterParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-50, locker_id: {$instance: locker}, recipient: Ada}
+    outcome: registered
+
+  - at: 2026-09-29T11:00:02Z
+    command: parcels.locker.RegisterParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-50, locker_id: {$instance: locker}, recipient: Ada}
+    outcome: code-taken
+
+  - at: 2026-09-29T11:00:03Z
+    command: parcels.locker.NoteParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-50, note: ""}
+    outcome: blank-note
+
+  - at: 2026-09-29T11:00:04Z
+    command: parcels.locker.CloseLocker
+    actor: parcels.locker.Courier
+    input: {locker_id: {$instance: locker}}
+    outcome: closed
+
+  - at: 2026-09-29T11:00:05Z
+    command: parcels.locker.DepositParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-51, locker_id: {$instance: locker}, recipient: nobody}
+    outcome: bad-recipient
+
+assert:
+  - view: parcels.locker.Parcels
+    contains: {parcel_code: PX-50, recipient: Ada}

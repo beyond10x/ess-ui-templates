@@ -1,0 +1,44 @@
+type: ess-scenario/1
+domain: parcels.locker
+scenario: two-related
+summary: Two closed-locker refusals hold on the same locker; the model leaves the answer open, so an implementation may give either.
+
+arrange:
+  - instance: locker
+    entity: parcels.locker.Locker
+
+timeline:
+  - at: 2026-09-30T11:00:00Z
+    command: parcels.locker.InstallLocker
+    actor: parcels.locker.Courier
+    input: {site: Harbour}
+    outcome: installed
+    capture: {instance: locker, event: parcels.locker.LockerInstalled, field: locker_id}
+
+  - at: 2026-09-30T11:00:01Z
+    command: parcels.locker.DropParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-80, locker_id: {$instance: locker}, recipient: Ada}
+    outcome: dropped
+
+  - at: 2026-09-30T11:00:02Z
+    command: parcels.locker.CloseLocker
+    actor: parcels.locker.Courier
+    input: {locker_id: {$instance: locker}}
+    outcome: closed
+
+  - at: 2026-09-30T11:00:03Z
+    command: parcels.locker.DropParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-81, locker_id: {$instance: locker}, recipient: Ada}
+    outcome: locker-closed
+
+  - at: 2026-09-30T11:00:04Z
+    command: parcels.locker.DropParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-82, locker_id: {$instance: locker}, recipient: Ada}
+    outcome: locker-shut
+
+assert:
+  - view: parcels.locker.Parcels
+    contains: {parcel_code: PX-80, recipient: Ada}

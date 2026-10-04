@@ -1,0 +1,290 @@
+{
+  "provenance": {
+    "suite_version": "ess-conformance/4",
+    "system": "billing",
+    "specification_version": "v3",
+    "spec_digest": "1e7906786567af32118eb2d0a8c3fcafa16c32c9649a80b60487fd2eeebc4c9c",
+    "contract_digest": "a21fd36f0055057629f4c235962163cdd34a3d178aa068925bcb53be623af301"
+  },
+  "scenarios": {
+    "billing.invoice/authored/outstanding-invoices-rank-latest-first": {
+      "purpose": "The invoice issued second is the first row of OutstandingInvoices, and the first is last.",
+      "steps": [
+        {
+          "step": "execute_command",
+          "command": "billing.invoice.CreateInvoice",
+          "actor": "billing.invoice.Customer",
+          "input": {
+            "account_id": {
+              "kind": "literal",
+              "value": "3f1d5b7e-0000-4000-8000-000000000001"
+            },
+            "amount": {
+              "kind": "literal",
+              "value": {
+                "amount": 120.0,
+                "currency": "EUR"
+              }
+            },
+            "customer_email": {
+              "kind": "literal",
+              "value": "earlier@example.test"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "billing.invoice.CreateInvoice",
+            "outcome": "accepted"
+          }
+        },
+        {
+          "step": "expect_event",
+          "event": "billing.invoice.InvoiceCreated",
+          "payload": {
+            "amount": {
+              "amount": 120.0,
+              "currency": "EUR"
+            },
+            "customer_email": "earlier@example.test"
+          },
+          "shape": {
+            "account_id": {
+              "holds": "primitive",
+              "kind": "uuid"
+            },
+            "amount.amount": {
+              "holds": "primitive",
+              "kind": "decimal"
+            },
+            "amount.currency": {
+              "holds": "primitive",
+              "kind": "string"
+            },
+            "customer_email": {
+              "holds": "primitive",
+              "kind": "string"
+            },
+            "invoice_id": {
+              "holds": "primitive",
+              "kind": "uuid"
+            }
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "earlier",
+          "entity": "billing.invoice.Invoice",
+          "event": "billing.invoice.InvoiceCreated",
+          "field": "invoice_id"
+        },
+        {
+          "step": "execute_command",
+          "command": "billing.invoice.IssueInvoice",
+          "input": {
+            "invoice_id": {
+              "kind": "instance",
+              "instance": "earlier"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "billing.invoice.IssueInvoice",
+            "outcome": "issued"
+          }
+        },
+        {
+          "step": "execute_command",
+          "command": "billing.invoice.CreateInvoice",
+          "actor": "billing.invoice.Customer",
+          "input": {
+            "account_id": {
+              "kind": "literal",
+              "value": "3f1d5b7e-0000-4000-8000-000000000001"
+            },
+            "amount": {
+              "kind": "literal",
+              "value": {
+                "amount": 340.0,
+                "currency": "EUR"
+              }
+            },
+            "customer_email": {
+              "kind": "literal",
+              "value": "later@example.test"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "billing.invoice.CreateInvoice",
+            "outcome": "accepted"
+          }
+        },
+        {
+          "step": "expect_event",
+          "event": "billing.invoice.InvoiceCreated",
+          "payload": {
+            "customer_email": "later@example.test"
+          },
+          "shape": {
+            "account_id": {
+              "holds": "primitive",
+              "kind": "uuid"
+            },
+            "amount.amount": {
+              "holds": "primitive",
+              "kind": "decimal"
+            },
+            "amount.currency": {
+              "holds": "primitive",
+              "kind": "string"
+            },
+            "customer_email": {
+              "holds": "primitive",
+              "kind": "string"
+            },
+            "invoice_id": {
+              "holds": "primitive",
+              "kind": "uuid"
+            }
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "later",
+          "entity": "billing.invoice.Invoice",
+          "event": "billing.invoice.InvoiceCreated",
+          "field": "invoice_id"
+        },
+        {
+          "step": "execute_command",
+          "command": "billing.invoice.IssueInvoice",
+          "input": {
+            "invoice_id": {
+              "kind": "instance",
+              "instance": "later"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "billing.invoice.IssueInvoice",
+            "outcome": "issued"
+          }
+        },
+        {
+          "step": "query_view",
+          "view": "billing.invoice.OutstandingInvoices"
+        },
+        {
+          "step": "expect_view",
+          "view": "billing.invoice.OutstandingInvoices",
+          "expectation": {
+            "expect": "at",
+            "order_by": [
+              "issued_at desc"
+            ],
+            "position": {
+              "row": "first"
+            },
+            "fields": {
+              "invoice_id": {
+                "kind": "instance",
+                "instance": "later"
+              }
+            }
+          }
+        },
+        {
+          "step": "query_view",
+          "view": "billing.invoice.OutstandingInvoices"
+        },
+        {
+          "step": "expect_view",
+          "view": "billing.invoice.OutstandingInvoices",
+          "expectation": {
+            "expect": "at",
+            "order_by": [
+              "issued_at desc"
+            ],
+            "position": {
+              "row": "last"
+            },
+            "fields": {
+              "invoice_id": {
+                "kind": "instance",
+                "instance": "earlier"
+              }
+            }
+          }
+        }
+      ],
+      "source": [
+        {
+          "kind": "domain",
+          "name": "billing.invoice"
+        },
+        {
+          "kind": "type",
+          "name": "billing.invoice.AccountId"
+        },
+        {
+          "kind": "type",
+          "name": "billing.invoice.Email"
+        },
+        {
+          "kind": "type",
+          "name": "billing.invoice.InvoiceId"
+        },
+        {
+          "kind": "type",
+          "name": "billing.invoice.Money"
+        },
+        {
+          "kind": "entity",
+          "name": "billing.invoice.Invoice"
+        },
+        {
+          "kind": "command",
+          "name": "billing.invoice.CreateInvoice"
+        },
+        {
+          "kind": "command",
+          "name": "billing.invoice.IssueInvoice"
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "billing.invoice.CreateInvoice",
+            "outcome": "accepted"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "billing.invoice.IssueInvoice",
+            "outcome": "issued"
+          }
+        },
+        {
+          "kind": "event",
+          "name": "billing.invoice.InvoiceCreated"
+        },
+        {
+          "kind": "view",
+          "name": "billing.invoice.OutstandingInvoices"
+        },
+        {
+          "kind": "actor",
+          "name": "billing.invoice.Customer"
+        }
+      ]
+    }
+  }
+}

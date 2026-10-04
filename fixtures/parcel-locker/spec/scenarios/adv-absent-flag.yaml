@@ -1,0 +1,28 @@
+type: ess-scenario/1
+domain: parcels.locker
+scenario: adv-absent-flag
+summary: The input guard beside a subject guard reads an absent Optional input as Unknown, so the guarded refusal is not taken.
+
+arrange:
+  - instance: locker
+    entity: parcels.locker.Locker
+
+timeline:
+  - at: 2026-09-30T15:00:00Z
+    command: parcels.locker.InstallLocker
+    actor: parcels.locker.Courier
+    input: {site: Harbour}
+    outcome: installed
+    capture: {instance: locker, event: parcels.locker.LockerInstalled, field: locker_id}
+
+  - at: 2026-09-30T15:00:01Z
+    command: parcels.locker.ParkParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-97, locker_id: {$instance: locker}, recipient: Ada}
+    outcome: parked
+
+  - at: 2026-09-30T15:00:02Z
+    command: parcels.locker.FlagParcel
+    actor: parcels.locker.Courier
+    input: {parcel_code: PX-97}
+    outcome: flagged

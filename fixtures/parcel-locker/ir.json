@@ -1,0 +1,2936 @@
+{
+  "system": "parcels",
+  "version": 1,
+  "naming": {},
+  "domains": {
+    "parcels.locker": {
+      "name": "parcels.locker",
+      "naming": {
+        "summary": "Lockers at a site, and the parcels deposited in them until a recipient collects them."
+      },
+      "types": [
+        "parcels.locker.Locker.State",
+        "parcels.locker.LockerId",
+        "parcels.locker.Parcel.State",
+        "parcels.locker.ParcelCode",
+        "parcels.locker.Priority"
+      ],
+      "entities": [
+        "parcels.locker.Locker",
+        "parcels.locker.Parcel"
+      ],
+      "commands": [
+        "parcels.locker.CloseLocker",
+        "parcels.locker.CollectParcel",
+        "parcels.locker.DepositParcel",
+        "parcels.locker.DiscardParcel",
+        "parcels.locker.DropParcel",
+        "parcels.locker.FlagParcel",
+        "parcels.locker.InstallLocker",
+        "parcels.locker.NoteParcel",
+        "parcels.locker.ParkParcel",
+        "parcels.locker.RegisterParcel",
+        "parcels.locker.ReserveParcel",
+        "parcels.locker.RushParcel",
+        "parcels.locker.StampParcel",
+        "parcels.locker.TagParcel"
+      ],
+      "events": [
+        "parcels.locker.LockerClosed",
+        "parcels.locker.LockerInstalled",
+        "parcels.locker.ParcelCollected",
+        "parcels.locker.ParcelDeposited",
+        "parcels.locker.ParcelDiscarded",
+        "parcels.locker.ParcelNoted"
+      ],
+      "errors": [
+        "parcels.locker.BlankNote",
+        "parcels.locker.FlagRefused",
+        "parcels.locker.LockerNotAccepting",
+        "parcels.locker.LockerShut",
+        "parcels.locker.NoSuchLocker",
+        "parcels.locker.NoSuchParcel",
+        "parcels.locker.NothingToNote",
+        "parcels.locker.ParcelCodeTaken",
+        "parcels.locker.ParcelStateConflict",
+        "parcels.locker.SignatureRefused",
+        "parcels.locker.StaffLockerClosed",
+        "parcels.locker.UnknownRecipient"
+      ],
+      "views": [
+        "parcels.locker.Lockers",
+        "parcels.locker.ParcelRecords",
+        "parcels.locker.Parcels"
+      ],
+      "actors": [
+        "parcels.locker.Courier",
+        "parcels.locker.Recipient"
+      ]
+    }
+  },
+  "types": {
+    "parcels.locker.Locker.State": {
+      "name": "parcels.locker.Locker.State",
+      "body": {
+        "kind": "enum",
+        "variants": [
+          "Active"
+        ]
+      },
+      "naming": {}
+    },
+    "parcels.locker.LockerId": {
+      "name": "parcels.locker.LockerId",
+      "body": {
+        "kind": "newtype",
+        "of": {
+          "kind": "primitive",
+          "name": "uuid"
+        },
+        "invariants": []
+      },
+      "naming": {}
+    },
+    "parcels.locker.Parcel.State": {
+      "name": "parcels.locker.Parcel.State",
+      "body": {
+        "kind": "enum",
+        "variants": [
+          "Collected",
+          "Stored"
+        ]
+      },
+      "naming": {}
+    },
+    "parcels.locker.ParcelCode": {
+      "name": "parcels.locker.ParcelCode",
+      "body": {
+        "kind": "newtype",
+        "of": {
+          "kind": "primitive",
+          "name": "string"
+        },
+        "invariants": []
+      },
+      "naming": {}
+    },
+    "parcels.locker.Priority": {
+      "name": "parcels.locker.Priority",
+      "body": {
+        "kind": "enum",
+        "variants": [
+          "Urgent",
+          "Normal"
+        ]
+      },
+      "naming": {}
+    }
+  },
+  "conversions": [],
+  "entities": {
+    "parcels.locker.Locker": {
+      "name": "parcels.locker.Locker",
+      "domain": "parcels.locker",
+      "identity": {
+        "name": "locker_id",
+        "type_ref": {
+          "kind": "declared",
+          "name": "parcels.locker.LockerId"
+        },
+        "naming": {}
+      },
+      "fields": [
+        {
+          "name": "site",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "string"
+          },
+          "naming": {}
+        },
+        {
+          "name": "accepting",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "boolean"
+          },
+          "naming": {}
+        }
+      ],
+      "state_type": "parcels.locker.Locker.State",
+      "lifecycle": {
+        "states": [
+          "Active"
+        ],
+        "initial": "Active",
+        "terminal": [
+          "Active"
+        ]
+      },
+      "invariants": [],
+      "naming": {}
+    },
+    "parcels.locker.Parcel": {
+      "name": "parcels.locker.Parcel",
+      "domain": "parcels.locker",
+      "identity": {
+        "name": "parcel_code",
+        "type_ref": {
+          "kind": "declared",
+          "name": "parcels.locker.ParcelCode"
+        },
+        "naming": {}
+      },
+      "fields": [
+        {
+          "name": "locker_id",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.LockerId"
+          },
+          "naming": {}
+        },
+        {
+          "name": "recipient",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "string"
+          },
+          "naming": {}
+        },
+        {
+          "name": "note",
+          "type_ref": {
+            "kind": "optional",
+            "of": {
+              "kind": "primitive",
+              "name": "string"
+            }
+          },
+          "naming": {}
+        }
+      ],
+      "state_type": "parcels.locker.Parcel.State",
+      "lifecycle": {
+        "states": [
+          "Collected",
+          "Stored"
+        ],
+        "initial": "Stored",
+        "terminal": [
+          "Collected"
+        ],
+        "transitions": [
+          {
+            "name": "collect",
+            "from": [
+              "Stored"
+            ],
+            "to": "Collected"
+          }
+        ]
+      },
+      "invariants": [],
+      "relations": [
+        {
+          "name": "locker",
+          "kind": "references",
+          "target": "parcels.locker.Locker",
+          "cardinality": "one",
+          "via": "locker_id"
+        }
+      ],
+      "naming": {}
+    }
+  },
+  "commands": {
+    "parcels.locker.CloseLocker": {
+      "name": "parcels.locker.CloseLocker",
+      "domain": "parcels.locker",
+      "input": [
+        {
+          "name": "locker_id",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.LockerId"
+          },
+          "naming": {}
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "closed",
+          "condition": {
+            "kind": "otherwise"
+          },
+          "subject": {
+            "entity": "parcels.locker.Locker",
+            "effect": "updates",
+            "instance": {
+              "from": "supplied",
+              "field": {
+                "name": "locker_id",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.LockerId"
+                },
+                "naming": {}
+              }
+            }
+          },
+          "test_strategy": "default_branch",
+          "emits": [
+            "parcels.locker.LockerClosed"
+          ],
+          "payload": [
+            {
+              "event": "parcels.locker.LockerClosed",
+              "fields": [
+                {
+                  "target": "locker_id",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.LockerId"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "locker_id",
+                    "type_ref": {
+                      "kind": "declared",
+                      "name": "parcels.locker.LockerId"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "sets": [
+            {
+              "target": "accepting",
+              "target_type": {
+                "kind": "primitive",
+                "name": "boolean"
+              },
+              "value": {
+                "kind": "literal",
+                "value": "false"
+              }
+            }
+          ]
+        },
+        {
+          "name": "no-such-locker",
+          "condition": {
+            "kind": "unknown_instance"
+          },
+          "test_strategy": "send_unknown_identity",
+          "emits": [],
+          "error": "parcels.locker.NoSuchLocker"
+        }
+      ],
+      "naming": {}
+    },
+    "parcels.locker.CollectParcel": {
+      "name": "parcels.locker.CollectParcel",
+      "domain": "parcels.locker",
+      "input": [
+        {
+          "name": "parcel_code",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.ParcelCode"
+          },
+          "naming": {}
+        },
+        {
+          "name": "signature",
+          "type_ref": {
+            "kind": "optional",
+            "of": {
+              "kind": "primitive",
+              "name": "string"
+            }
+          },
+          "naming": {}
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "signature-refused",
+          "condition": {
+            "kind": "when",
+            "predicate": "signature == refused"
+          },
+          "test_strategy": "construct_input",
+          "emits": [],
+          "error": "parcels.locker.SignatureRefused"
+        },
+        {
+          "name": "collected",
+          "condition": {
+            "kind": "otherwise"
+          },
+          "subject": {
+            "entity": "parcels.locker.Parcel",
+            "effect": "moves",
+            "transition": {
+              "name": "collect",
+              "from": [
+                "Stored"
+              ],
+              "to": "Collected"
+            },
+            "instance": {
+              "from": "supplied",
+              "field": {
+                "name": "parcel_code",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.ParcelCode"
+                },
+                "naming": {}
+              }
+            }
+          },
+          "test_strategy": "default_branch",
+          "emits": [
+            "parcels.locker.ParcelCollected"
+          ],
+          "payload": [
+            {
+              "event": "parcels.locker.ParcelCollected",
+              "fields": [
+                {
+                  "target": "parcel_code",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.ParcelCode"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "parcel_code",
+                    "type_ref": {
+                      "kind": "declared",
+                      "name": "parcels.locker.ParcelCode"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "not-in-locker",
+          "condition": {
+            "kind": "wrong_state"
+          },
+          "complete_refusal": true,
+          "test_strategy": "arrange_state",
+          "emits": [],
+          "error": "parcels.locker.ParcelStateConflict"
+        },
+        {
+          "name": "no-such-parcel",
+          "condition": {
+            "kind": "unknown_instance"
+          },
+          "test_strategy": "send_unknown_identity",
+          "emits": [],
+          "error": "parcels.locker.NoSuchParcel"
+        }
+      ],
+      "naming": {}
+    },
+    "parcels.locker.DepositParcel": {
+      "name": "parcels.locker.DepositParcel",
+      "domain": "parcels.locker",
+      "input": [
+        {
+          "name": "parcel_code",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.ParcelCode"
+          },
+          "naming": {}
+        },
+        {
+          "name": "locker_id",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.LockerId"
+          },
+          "naming": {}
+        },
+        {
+          "name": "recipient",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "string"
+          },
+          "naming": {}
+        }
+      ],
+      "examples": {
+        "recipient": "Ada"
+      },
+      "outcomes": [
+        {
+          "name": "already-deposited",
+          "condition": {
+            "kind": "existing_instance"
+          },
+          "test_strategy": "send_existing_identity",
+          "emits": [],
+          "error": "parcels.locker.ParcelCodeTaken"
+        },
+        {
+          "name": "no-locker",
+          "condition": {
+            "kind": "related",
+            "via": {
+              "from": "input",
+              "field": "locker_id",
+              "type_ref": {
+                "kind": "declared",
+                "name": "parcels.locker.LockerId"
+              }
+            },
+            "entity": "parcels.locker.Locker",
+            "test": "absent"
+          },
+          "test_strategy": "arrange_related_row",
+          "emits": [],
+          "error": "parcels.locker.NoSuchLocker"
+        },
+        {
+          "name": "express",
+          "condition": {
+            "kind": "when",
+            "predicate": "recipient == vip"
+          },
+          "subject": {
+            "entity": "parcels.locker.Parcel",
+            "effect": "creates",
+            "instance": {
+              "from": "observed",
+              "event": "parcels.locker.ParcelDeposited",
+              "field": {
+                "name": "parcel_code",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.ParcelCode"
+                },
+                "naming": {}
+              }
+            }
+          },
+          "test_strategy": "construct_input",
+          "emits": [
+            "parcels.locker.ParcelDeposited"
+          ],
+          "payload": [
+            {
+              "event": "parcels.locker.ParcelDeposited",
+              "fields": [
+                {
+                  "target": "parcel_code",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.ParcelCode"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "parcel_code",
+                    "type_ref": {
+                      "kind": "declared",
+                      "name": "parcels.locker.ParcelCode"
+                    }
+                  }
+                },
+                {
+                  "target": "locker_id",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.LockerId"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "locker_id",
+                    "type_ref": {
+                      "kind": "declared",
+                      "name": "parcels.locker.LockerId"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "sets": [
+            {
+              "target": "locker_id",
+              "target_type": {
+                "kind": "declared",
+                "name": "parcels.locker.LockerId"
+              },
+              "value": {
+                "kind": "input_field",
+                "field": "locker_id",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.LockerId"
+                }
+              }
+            },
+            {
+              "target": "recipient",
+              "target_type": {
+                "kind": "primitive",
+                "name": "string"
+              },
+              "value": {
+                "kind": "input_field",
+                "field": "recipient",
+                "type_ref": {
+                  "kind": "primitive",
+                  "name": "string"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "locker-closed",
+          "condition": {
+            "kind": "related",
+            "via": {
+              "from": "input",
+              "field": "locker_id",
+              "type_ref": {
+                "kind": "declared",
+                "name": "parcels.locker.LockerId"
+              }
+            },
+            "entity": "parcels.locker.Locker",
+            "test": {
+              "holds": {
+                "predicate": "accepting == false"
+              }
+            }
+          },
+          "test_strategy": "arrange_related_row",
+          "emits": [],
+          "error": "parcels.locker.LockerNotAccepting"
+        },
+        {
+          "name": "bad-recipient",
+          "condition": {
+            "kind": "when",
+            "predicate": "recipient == nobody"
+          },
+          "test_strategy": "construct_input",
+          "emits": [],
+          "error": "parcels.locker.UnknownRecipient"
+        },
+        {
+          "name": "deposited",
+          "condition": {
+            "kind": "otherwise"
+          },
+          "subject": {
+            "entity": "parcels.locker.Parcel",
+            "effect": "creates",
+            "instance": {
+              "from": "observed",
+              "event": "parcels.locker.ParcelDeposited",
+              "field": {
+                "name": "parcel_code",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.ParcelCode"
+                },
+                "naming": {}
+              }
+            }
+          },
+          "test_strategy": "default_branch",
+          "emits": [
+            "parcels.locker.ParcelDeposited"
+          ],
+          "payload": [
+            {
+              "event": "parcels.locker.ParcelDeposited",
+              "fields": [
+                {
+                  "target": "parcel_code",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.ParcelCode"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "parcel_code",
+                    "type_ref": {
+                      "kind": "declared",
+                      "name": "parcels.locker.ParcelCode"
+                    }
+                  }
+                },
+                {
+                  "target": "locker_id",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.LockerId"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "locker_id",
+                    "type_ref": {
+                      "kind": "declared",
+                      "name": "parcels.locker.LockerId"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "sets": [
+            {
+              "target": "locker_id",
+              "target_type": {
+                "kind": "declared",
+                "name": "parcels.locker.LockerId"
+              },
+              "value": {
+                "kind": "input_field",
+                "field": "locker_id",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.LockerId"
+                }
+              }
+            },
+            {
+              "target": "recipient",
+              "target_type": {
+                "kind": "primitive",
+                "name": "string"
+              },
+              "value": {
+                "kind": "input_field",
+                "field": "recipient",
+                "type_ref": {
+                  "kind": "primitive",
+                  "name": "string"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "naming": {}
+    },
+    "parcels.locker.DiscardParcel": {
+      "name": "parcels.locker.DiscardParcel",
+      "domain": "parcels.locker",
+      "input": [
+        {
+          "name": "parcel_code",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.ParcelCode"
+          },
+          "naming": {}
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "discarded",
+          "condition": {
+            "kind": "otherwise"
+          },
+          "subject": {
+            "entity": "parcels.locker.Parcel",
+            "effect": "deletes",
+            "instance": {
+              "from": "supplied",
+              "field": {
+                "name": "parcel_code",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.ParcelCode"
+                },
+                "naming": {}
+              }
+            }
+          },
+          "test_strategy": "default_branch",
+          "emits": [
+            "parcels.locker.ParcelDiscarded"
+          ],
+          "payload": [
+            {
+              "event": "parcels.locker.ParcelDiscarded",
+              "fields": [
+                {
+                  "target": "parcel_code",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.ParcelCode"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "parcel_code",
+                    "type_ref": {
+                      "kind": "declared",
+                      "name": "parcels.locker.ParcelCode"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "no-such-parcel",
+          "condition": {
+            "kind": "unknown_instance"
+          },
+          "test_strategy": "send_unknown_identity",
+          "emits": [],
+          "error": "parcels.locker.NoSuchParcel"
+        }
+      ],
+      "naming": {}
+    },
+    "parcels.locker.DropParcel": {
+      "name": "parcels.locker.DropParcel",
+      "domain": "parcels.locker",
+      "input": [
+        {
+          "name": "parcel_code",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.ParcelCode"
+          },
+          "naming": {}
+        },
+        {
+          "name": "locker_id",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.LockerId"
+          },
+          "naming": {}
+        },
+        {
+          "name": "recipient",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "string"
+          },
+          "naming": {}
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "no-locker",
+          "condition": {
+            "kind": "related",
+            "via": {
+              "from": "input",
+              "field": "locker_id",
+              "type_ref": {
+                "kind": "declared",
+                "name": "parcels.locker.LockerId"
+              }
+            },
+            "entity": "parcels.locker.Locker",
+            "test": "absent"
+          },
+          "test_strategy": "arrange_related_row",
+          "emits": [],
+          "error": "parcels.locker.NoSuchLocker"
+        },
+        {
+          "name": "locker-closed",
+          "condition": {
+            "kind": "related",
+            "via": {
+              "from": "input",
+              "field": "locker_id",
+              "type_ref": {
+                "kind": "declared",
+                "name": "parcels.locker.LockerId"
+              }
+            },
+            "entity": "parcels.locker.Locker",
+            "test": {
+              "holds": {
+                "predicate": "accepting == false"
+              }
+            }
+          },
+          "test_strategy": "arrange_related_row",
+          "emits": [],
+          "error": "parcels.locker.LockerNotAccepting"
+        },
+        {
+          "name": "locker-shut",
+          "condition": {
+            "kind": "related",
+            "via": {
+              "from": "input",
+              "field": "locker_id",
+              "type_ref": {
+                "kind": "declared",
+                "name": "parcels.locker.LockerId"
+              }
+            },
+            "entity": "parcels.locker.Locker",
+            "test": {
+              "holds": {
+                "predicate": "accepting == false"
+              }
+            }
+          },
+          "test_strategy": "arrange_related_row",
+          "emits": [],
+          "error": "parcels.locker.LockerShut"
+        },
+        {
+          "name": "dropped",
+          "condition": {
+            "kind": "otherwise"
+          },
+          "subject": {
+            "entity": "parcels.locker.Parcel",
+            "effect": "creates",
+            "instance": {
+              "from": "observed",
+              "event": "parcels.locker.ParcelDeposited",
+              "field": {
+                "name": "parcel_code",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.ParcelCode"
+                },
+                "naming": {}
+              }
+            }
+          },
+          "test_strategy": "default_branch",
+          "emits": [
+            "parcels.locker.ParcelDeposited"
+          ],
+          "payload": [
+            {
+              "event": "parcels.locker.ParcelDeposited",
+              "fields": [
+                {
+                  "target": "parcel_code",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.ParcelCode"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "parcel_code",
+                    "type_ref": {
+                      "kind": "declared",
+                      "name": "parcels.locker.ParcelCode"
+                    }
+                  }
+                },
+                {
+                  "target": "locker_id",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.LockerId"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "locker_id",
+                    "type_ref": {
+                      "kind": "declared",
+                      "name": "parcels.locker.LockerId"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "sets": [
+            {
+              "target": "locker_id",
+              "target_type": {
+                "kind": "declared",
+                "name": "parcels.locker.LockerId"
+              },
+              "value": {
+                "kind": "input_field",
+                "field": "locker_id",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.LockerId"
+                }
+              }
+            },
+            {
+              "target": "recipient",
+              "target_type": {
+                "kind": "primitive",
+                "name": "string"
+              },
+              "value": {
+                "kind": "input_field",
+                "field": "recipient",
+                "type_ref": {
+                  "kind": "primitive",
+                  "name": "string"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "naming": {}
+    },
+    "parcels.locker.FlagParcel": {
+      "name": "parcels.locker.FlagParcel",
+      "domain": "parcels.locker",
+      "input": [
+        {
+          "name": "parcel_code",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.ParcelCode"
+          },
+          "naming": {}
+        },
+        {
+          "name": "flag",
+          "type_ref": {
+            "kind": "optional",
+            "of": {
+              "kind": "primitive",
+              "name": "string"
+            }
+          },
+          "naming": {}
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "flag-refused",
+          "condition": {
+            "kind": "subject_predicate",
+            "predicate": "recipient != zzz",
+            "input": "flag == urgent"
+          },
+          "test_strategy": "observe_subject_fact",
+          "emits": [],
+          "error": "parcels.locker.FlagRefused",
+          "error_payload": [
+            {
+              "target": "recipient",
+              "target_type": {
+                "kind": "primitive",
+                "name": "string"
+              },
+              "value": {
+                "kind": "subject_field",
+                "field": "recipient",
+                "type_ref": {
+                  "kind": "primitive",
+                  "name": "string"
+                }
+              }
+            },
+            {
+              "target": "site",
+              "target_type": {
+                "kind": "primitive",
+                "name": "string"
+              },
+              "value": {
+                "kind": "related_field",
+                "via": {
+                  "from": "subject",
+                  "field": "locker_id",
+                  "type_ref": {
+                    "kind": "declared",
+                    "name": "parcels.locker.LockerId"
+                  }
+                },
+                "entity": "parcels.locker.Locker",
+                "field": "site",
+                "type_ref": {
+                  "kind": "primitive",
+                  "name": "string"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "flagged",
+          "condition": {
+            "kind": "otherwise"
+          },
+          "subject": {
+            "entity": "parcels.locker.Parcel",
+            "effect": "updates",
+            "instance": {
+              "from": "supplied",
+              "field": {
+                "name": "parcel_code",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.ParcelCode"
+                },
+                "naming": {}
+              }
+            }
+          },
+          "test_strategy": "default_branch",
+          "emits": [
+            "parcels.locker.ParcelNoted"
+          ],
+          "payload": [
+            {
+              "event": "parcels.locker.ParcelNoted",
+              "fields": [
+                {
+                  "target": "parcel_code",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.ParcelCode"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "parcel_code",
+                    "type_ref": {
+                      "kind": "declared",
+                      "name": "parcels.locker.ParcelCode"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "sets": [
+            {
+              "target": "note",
+              "target_type": {
+                "kind": "optional",
+                "of": {
+                  "kind": "primitive",
+                  "name": "string"
+                }
+              },
+              "value": {
+                "kind": "input_field",
+                "field": "flag",
+                "type_ref": {
+                  "kind": "optional",
+                  "of": {
+                    "kind": "primitive",
+                    "name": "string"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "no-such-parcel",
+          "condition": {
+            "kind": "unknown_instance"
+          },
+          "test_strategy": "send_unknown_identity",
+          "emits": [],
+          "error": "parcels.locker.NoSuchParcel"
+        }
+      ],
+      "naming": {}
+    },
+    "parcels.locker.InstallLocker": {
+      "name": "parcels.locker.InstallLocker",
+      "domain": "parcels.locker",
+      "input": [
+        {
+          "name": "site",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "string"
+          },
+          "naming": {}
+        }
+      ],
+      "examples": {
+        "site": "North Station"
+      },
+      "outcomes": [
+        {
+          "name": "installed",
+          "condition": {
+            "kind": "otherwise"
+          },
+          "subject": {
+            "entity": "parcels.locker.Locker",
+            "effect": "creates",
+            "instance": {
+              "from": "observed",
+              "event": "parcels.locker.LockerInstalled",
+              "field": {
+                "name": "locker_id",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.LockerId"
+                },
+                "naming": {}
+              }
+            }
+          },
+          "test_strategy": "default_branch",
+          "emits": [
+            "parcels.locker.LockerInstalled"
+          ],
+          "payload": [
+            {
+              "event": "parcels.locker.LockerInstalled",
+              "fields": [
+                {
+                  "target": "locker_id",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.LockerId"
+                  },
+                  "value": {
+                    "kind": "generated"
+                  }
+                },
+                {
+                  "target": "site",
+                  "target_type": {
+                    "kind": "primitive",
+                    "name": "string"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "site",
+                    "type_ref": {
+                      "kind": "primitive",
+                      "name": "string"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "sets": [
+            {
+              "target": "site",
+              "target_type": {
+                "kind": "primitive",
+                "name": "string"
+              },
+              "value": {
+                "kind": "input_field",
+                "field": "site",
+                "type_ref": {
+                  "kind": "primitive",
+                  "name": "string"
+                }
+              }
+            },
+            {
+              "target": "accepting",
+              "target_type": {
+                "kind": "primitive",
+                "name": "boolean"
+              },
+              "value": {
+                "kind": "literal",
+                "value": "true"
+              }
+            }
+          ]
+        }
+      ],
+      "naming": {}
+    },
+    "parcels.locker.NoteParcel": {
+      "name": "parcels.locker.NoteParcel",
+      "domain": "parcels.locker",
+      "input": [
+        {
+          "name": "parcel_code",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.ParcelCode"
+          },
+          "naming": {}
+        },
+        {
+          "name": "note",
+          "type_ref": {
+            "kind": "optional",
+            "of": {
+              "kind": "primitive",
+              "name": "string"
+            }
+          },
+          "naming": {}
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "noted",
+          "condition": {
+            "kind": "when",
+            "predicate": "defined(note)"
+          },
+          "subject": {
+            "entity": "parcels.locker.Parcel",
+            "effect": "updates",
+            "instance": {
+              "from": "supplied",
+              "field": {
+                "name": "parcel_code",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.ParcelCode"
+                },
+                "naming": {}
+              }
+            }
+          },
+          "test_strategy": "construct_input",
+          "emits": [
+            "parcels.locker.ParcelNoted"
+          ],
+          "payload": [
+            {
+              "event": "parcels.locker.ParcelNoted",
+              "fields": [
+                {
+                  "target": "parcel_code",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.ParcelCode"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "parcel_code",
+                    "type_ref": {
+                      "kind": "declared",
+                      "name": "parcels.locker.ParcelCode"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "sets": [
+            {
+              "target": "note",
+              "target_type": {
+                "kind": "optional",
+                "of": {
+                  "kind": "primitive",
+                  "name": "string"
+                }
+              },
+              "value": {
+                "kind": "input_field",
+                "field": "note",
+                "type_ref": {
+                  "kind": "optional",
+                  "of": {
+                    "kind": "primitive",
+                    "name": "string"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "blank-note",
+          "condition": {
+            "kind": "when",
+            "predicate": "note == \"\""
+          },
+          "test_strategy": "construct_input",
+          "emits": [],
+          "error": "parcels.locker.BlankNote"
+        },
+        {
+          "name": "nothing-to-note",
+          "condition": {
+            "kind": "otherwise"
+          },
+          "test_strategy": "default_branch",
+          "emits": [],
+          "error": "parcels.locker.NothingToNote"
+        },
+        {
+          "name": "no-such-parcel",
+          "condition": {
+            "kind": "unknown_instance"
+          },
+          "test_strategy": "send_unknown_identity",
+          "emits": [],
+          "error": "parcels.locker.NoSuchParcel"
+        }
+      ],
+      "naming": {}
+    },
+    "parcels.locker.ParkParcel": {
+      "name": "parcels.locker.ParkParcel",
+      "domain": "parcels.locker",
+      "input": [
+        {
+          "name": "parcel_code",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.ParcelCode"
+          },
+          "naming": {}
+        },
+        {
+          "name": "locker_id",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.LockerId"
+          },
+          "naming": {}
+        },
+        {
+          "name": "recipient",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "string"
+          },
+          "naming": {}
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "no-locker",
+          "condition": {
+            "kind": "related",
+            "via": {
+              "from": "input",
+              "field": "locker_id",
+              "type_ref": {
+                "kind": "declared",
+                "name": "parcels.locker.LockerId"
+              }
+            },
+            "entity": "parcels.locker.Locker",
+            "test": "absent"
+          },
+          "test_strategy": "arrange_related_row",
+          "emits": [],
+          "error": "parcels.locker.NoSuchLocker"
+        },
+        {
+          "name": "locker-closed",
+          "condition": {
+            "kind": "related",
+            "via": {
+              "from": "input",
+              "field": "locker_id",
+              "type_ref": {
+                "kind": "declared",
+                "name": "parcels.locker.LockerId"
+              }
+            },
+            "entity": "parcels.locker.Locker",
+            "test": {
+              "holds": {
+                "predicate": "accepting == false"
+              }
+            }
+          },
+          "test_strategy": "arrange_related_row",
+          "emits": [],
+          "error": "parcels.locker.LockerNotAccepting"
+        },
+        {
+          "name": "parked",
+          "condition": {
+            "kind": "when",
+            "predicate": true
+          },
+          "subject": {
+            "entity": "parcels.locker.Parcel",
+            "effect": "creates",
+            "instance": {
+              "from": "observed",
+              "event": "parcels.locker.ParcelDeposited",
+              "field": {
+                "name": "parcel_code",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.ParcelCode"
+                },
+                "naming": {}
+              }
+            }
+          },
+          "test_strategy": "construct_input",
+          "emits": [
+            "parcels.locker.ParcelDeposited"
+          ],
+          "payload": [
+            {
+              "event": "parcels.locker.ParcelDeposited",
+              "fields": [
+                {
+                  "target": "parcel_code",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.ParcelCode"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "parcel_code",
+                    "type_ref": {
+                      "kind": "declared",
+                      "name": "parcels.locker.ParcelCode"
+                    }
+                  }
+                },
+                {
+                  "target": "locker_id",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.LockerId"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "locker_id",
+                    "type_ref": {
+                      "kind": "declared",
+                      "name": "parcels.locker.LockerId"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "sets": [
+            {
+              "target": "locker_id",
+              "target_type": {
+                "kind": "declared",
+                "name": "parcels.locker.LockerId"
+              },
+              "value": {
+                "kind": "input_field",
+                "field": "locker_id",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.LockerId"
+                }
+              }
+            },
+            {
+              "target": "recipient",
+              "target_type": {
+                "kind": "primitive",
+                "name": "string"
+              },
+              "value": {
+                "kind": "input_field",
+                "field": "recipient",
+                "type_ref": {
+                  "kind": "primitive",
+                  "name": "string"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "naming": {}
+    },
+    "parcels.locker.RegisterParcel": {
+      "name": "parcels.locker.RegisterParcel",
+      "domain": "parcels.locker",
+      "input": [
+        {
+          "name": "parcel_code",
+          "type_ref": {
+            "kind": "optional",
+            "of": {
+              "kind": "declared",
+              "name": "parcels.locker.ParcelCode"
+            }
+          },
+          "naming": {}
+        },
+        {
+          "name": "locker_id",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.LockerId"
+          },
+          "naming": {}
+        },
+        {
+          "name": "recipient",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "string"
+          },
+          "naming": {}
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "code-taken",
+          "condition": {
+            "kind": "existing_instance"
+          },
+          "test_strategy": "send_existing_identity",
+          "emits": [],
+          "error": "parcels.locker.ParcelCodeTaken"
+        },
+        {
+          "name": "registered",
+          "condition": {
+            "kind": "otherwise"
+          },
+          "subject": {
+            "entity": "parcels.locker.Parcel",
+            "effect": "creates",
+            "instance": {
+              "from": "observed",
+              "event": "parcels.locker.ParcelDeposited",
+              "field": {
+                "name": "parcel_code",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.ParcelCode"
+                },
+                "naming": {}
+              }
+            }
+          },
+          "test_strategy": "default_branch",
+          "emits": [
+            "parcels.locker.ParcelDeposited"
+          ],
+          "payload": [
+            {
+              "event": "parcels.locker.ParcelDeposited",
+              "fields": [
+                {
+                  "target": "parcel_code",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.ParcelCode"
+                  },
+                  "value": {
+                    "kind": "input_or_generated",
+                    "field": "parcel_code",
+                    "type_ref": {
+                      "kind": "optional",
+                      "of": {
+                        "kind": "declared",
+                        "name": "parcels.locker.ParcelCode"
+                      }
+                    }
+                  }
+                },
+                {
+                  "target": "locker_id",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.LockerId"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "locker_id",
+                    "type_ref": {
+                      "kind": "declared",
+                      "name": "parcels.locker.LockerId"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "sets": [
+            {
+              "target": "locker_id",
+              "target_type": {
+                "kind": "declared",
+                "name": "parcels.locker.LockerId"
+              },
+              "value": {
+                "kind": "input_field",
+                "field": "locker_id",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.LockerId"
+                }
+              }
+            },
+            {
+              "target": "recipient",
+              "target_type": {
+                "kind": "primitive",
+                "name": "string"
+              },
+              "value": {
+                "kind": "input_field",
+                "field": "recipient",
+                "type_ref": {
+                  "kind": "primitive",
+                  "name": "string"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "naming": {}
+    },
+    "parcels.locker.ReserveParcel": {
+      "name": "parcels.locker.ReserveParcel",
+      "domain": "parcels.locker",
+      "input": [
+        {
+          "name": "parcel_code",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.ParcelCode"
+          },
+          "naming": {}
+        },
+        {
+          "name": "locker_id",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.LockerId"
+          },
+          "naming": {}
+        },
+        {
+          "name": "recipient",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "string"
+          },
+          "naming": {}
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "no-locker",
+          "condition": {
+            "kind": "related",
+            "via": {
+              "from": "input",
+              "field": "locker_id",
+              "type_ref": {
+                "kind": "declared",
+                "name": "parcels.locker.LockerId"
+              }
+            },
+            "entity": "parcels.locker.Locker",
+            "test": "absent"
+          },
+          "test_strategy": "arrange_related_row",
+          "emits": [],
+          "error": "parcels.locker.NoSuchLocker"
+        },
+        {
+          "name": "staff-closed",
+          "condition": {
+            "kind": "related",
+            "via": {
+              "from": "input",
+              "field": "locker_id",
+              "type_ref": {
+                "kind": "declared",
+                "name": "parcels.locker.LockerId"
+              }
+            },
+            "entity": "parcels.locker.Locker",
+            "test": {
+              "holds": {
+                "predicate": "accepting == false"
+              }
+            },
+            "input": "recipient == staff"
+          },
+          "test_strategy": "arrange_related_row",
+          "emits": [],
+          "error": "parcels.locker.StaffLockerClosed"
+        },
+        {
+          "name": "locker-closed",
+          "condition": {
+            "kind": "related",
+            "via": {
+              "from": "input",
+              "field": "locker_id",
+              "type_ref": {
+                "kind": "declared",
+                "name": "parcels.locker.LockerId"
+              }
+            },
+            "entity": "parcels.locker.Locker",
+            "test": {
+              "holds": {
+                "predicate": "accepting == false"
+              }
+            },
+            "input": "recipient != staff"
+          },
+          "test_strategy": "arrange_related_row",
+          "emits": [],
+          "error": "parcels.locker.LockerNotAccepting"
+        },
+        {
+          "name": "reserved",
+          "condition": {
+            "kind": "otherwise"
+          },
+          "subject": {
+            "entity": "parcels.locker.Parcel",
+            "effect": "creates",
+            "instance": {
+              "from": "observed",
+              "event": "parcels.locker.ParcelDeposited",
+              "field": {
+                "name": "parcel_code",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.ParcelCode"
+                },
+                "naming": {}
+              }
+            }
+          },
+          "test_strategy": "default_branch",
+          "emits": [
+            "parcels.locker.ParcelDeposited"
+          ],
+          "payload": [
+            {
+              "event": "parcels.locker.ParcelDeposited",
+              "fields": [
+                {
+                  "target": "parcel_code",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.ParcelCode"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "parcel_code",
+                    "type_ref": {
+                      "kind": "declared",
+                      "name": "parcels.locker.ParcelCode"
+                    }
+                  }
+                },
+                {
+                  "target": "locker_id",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.LockerId"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "locker_id",
+                    "type_ref": {
+                      "kind": "declared",
+                      "name": "parcels.locker.LockerId"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "sets": [
+            {
+              "target": "locker_id",
+              "target_type": {
+                "kind": "declared",
+                "name": "parcels.locker.LockerId"
+              },
+              "value": {
+                "kind": "input_field",
+                "field": "locker_id",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.LockerId"
+                }
+              }
+            },
+            {
+              "target": "recipient",
+              "target_type": {
+                "kind": "primitive",
+                "name": "string"
+              },
+              "value": {
+                "kind": "input_field",
+                "field": "recipient",
+                "type_ref": {
+                  "kind": "primitive",
+                  "name": "string"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "naming": {}
+    },
+    "parcels.locker.RushParcel": {
+      "name": "parcels.locker.RushParcel",
+      "domain": "parcels.locker",
+      "input": [
+        {
+          "name": "parcel_code",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.ParcelCode"
+          },
+          "naming": {}
+        },
+        {
+          "name": "locker_id",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.LockerId"
+          },
+          "naming": {}
+        },
+        {
+          "name": "recipient",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "string"
+          },
+          "naming": {}
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "no-locker",
+          "condition": {
+            "kind": "related",
+            "via": {
+              "from": "input",
+              "field": "locker_id",
+              "type_ref": {
+                "kind": "declared",
+                "name": "parcels.locker.LockerId"
+              }
+            },
+            "entity": "parcels.locker.Locker",
+            "test": "absent"
+          },
+          "test_strategy": "arrange_related_row",
+          "emits": [],
+          "error": "parcels.locker.NoSuchLocker"
+        },
+        {
+          "name": "locker-closed",
+          "condition": {
+            "kind": "related",
+            "via": {
+              "from": "input",
+              "field": "locker_id",
+              "type_ref": {
+                "kind": "declared",
+                "name": "parcels.locker.LockerId"
+              }
+            },
+            "entity": "parcels.locker.Locker",
+            "test": {
+              "holds": {
+                "predicate": "accepting == false"
+              }
+            }
+          },
+          "test_strategy": "arrange_related_row",
+          "emits": [],
+          "error": "parcels.locker.LockerNotAccepting"
+        },
+        {
+          "name": "rush-a",
+          "condition": {
+            "kind": "when",
+            "predicate": "recipient == vip"
+          },
+          "subject": {
+            "entity": "parcels.locker.Parcel",
+            "effect": "creates",
+            "instance": {
+              "from": "observed",
+              "event": "parcels.locker.ParcelDeposited",
+              "field": {
+                "name": "parcel_code",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.ParcelCode"
+                },
+                "naming": {}
+              }
+            }
+          },
+          "test_strategy": "construct_input",
+          "emits": [
+            "parcels.locker.ParcelDeposited"
+          ],
+          "payload": [
+            {
+              "event": "parcels.locker.ParcelDeposited",
+              "fields": [
+                {
+                  "target": "parcel_code",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.ParcelCode"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "parcel_code",
+                    "type_ref": {
+                      "kind": "declared",
+                      "name": "parcels.locker.ParcelCode"
+                    }
+                  }
+                },
+                {
+                  "target": "locker_id",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.LockerId"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "locker_id",
+                    "type_ref": {
+                      "kind": "declared",
+                      "name": "parcels.locker.LockerId"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "sets": [
+            {
+              "target": "locker_id",
+              "target_type": {
+                "kind": "declared",
+                "name": "parcels.locker.LockerId"
+              },
+              "value": {
+                "kind": "input_field",
+                "field": "locker_id",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.LockerId"
+                }
+              }
+            },
+            {
+              "target": "recipient",
+              "target_type": {
+                "kind": "primitive",
+                "name": "string"
+              },
+              "value": {
+                "kind": "input_field",
+                "field": "recipient",
+                "type_ref": {
+                  "kind": "primitive",
+                  "name": "string"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "rush-b",
+          "condition": {
+            "kind": "when",
+            "predicate": "recipient != nobody"
+          },
+          "subject": {
+            "entity": "parcels.locker.Parcel",
+            "effect": "creates",
+            "instance": {
+              "from": "observed",
+              "event": "parcels.locker.ParcelDeposited",
+              "field": {
+                "name": "parcel_code",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.ParcelCode"
+                },
+                "naming": {}
+              }
+            }
+          },
+          "test_strategy": "construct_input",
+          "emits": [
+            "parcels.locker.ParcelDeposited"
+          ],
+          "payload": [
+            {
+              "event": "parcels.locker.ParcelDeposited",
+              "fields": [
+                {
+                  "target": "parcel_code",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.ParcelCode"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "parcel_code",
+                    "type_ref": {
+                      "kind": "declared",
+                      "name": "parcels.locker.ParcelCode"
+                    }
+                  }
+                },
+                {
+                  "target": "locker_id",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.LockerId"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "locker_id",
+                    "type_ref": {
+                      "kind": "declared",
+                      "name": "parcels.locker.LockerId"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "sets": [
+            {
+              "target": "locker_id",
+              "target_type": {
+                "kind": "declared",
+                "name": "parcels.locker.LockerId"
+              },
+              "value": {
+                "kind": "input_field",
+                "field": "locker_id",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.LockerId"
+                }
+              }
+            },
+            {
+              "target": "recipient",
+              "target_type": {
+                "kind": "primitive",
+                "name": "string"
+              },
+              "value": {
+                "kind": "literal",
+                "value": "rushed"
+              }
+            }
+          ]
+        },
+        {
+          "name": "rush-held",
+          "condition": {
+            "kind": "otherwise"
+          },
+          "subject": {
+            "entity": "parcels.locker.Parcel",
+            "effect": "creates",
+            "instance": {
+              "from": "observed",
+              "event": "parcels.locker.ParcelDeposited",
+              "field": {
+                "name": "parcel_code",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.ParcelCode"
+                },
+                "naming": {}
+              }
+            }
+          },
+          "test_strategy": "default_branch",
+          "emits": [
+            "parcels.locker.ParcelDeposited"
+          ],
+          "payload": [
+            {
+              "event": "parcels.locker.ParcelDeposited",
+              "fields": [
+                {
+                  "target": "parcel_code",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.ParcelCode"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "parcel_code",
+                    "type_ref": {
+                      "kind": "declared",
+                      "name": "parcels.locker.ParcelCode"
+                    }
+                  }
+                },
+                {
+                  "target": "locker_id",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.LockerId"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "locker_id",
+                    "type_ref": {
+                      "kind": "declared",
+                      "name": "parcels.locker.LockerId"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "sets": [
+            {
+              "target": "locker_id",
+              "target_type": {
+                "kind": "declared",
+                "name": "parcels.locker.LockerId"
+              },
+              "value": {
+                "kind": "input_field",
+                "field": "locker_id",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.LockerId"
+                }
+              }
+            },
+            {
+              "target": "recipient",
+              "target_type": {
+                "kind": "primitive",
+                "name": "string"
+              },
+              "value": {
+                "kind": "input_field",
+                "field": "recipient",
+                "type_ref": {
+                  "kind": "primitive",
+                  "name": "string"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "naming": {}
+    },
+    "parcels.locker.StampParcel": {
+      "name": "parcels.locker.StampParcel",
+      "domain": "parcels.locker",
+      "input": [
+        {
+          "name": "parcel_code",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.ParcelCode"
+          },
+          "naming": {}
+        },
+        {
+          "name": "priority",
+          "type_ref": {
+            "kind": "optional",
+            "of": {
+              "kind": "declared",
+              "name": "parcels.locker.Priority"
+            }
+          },
+          "naming": {}
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "stamped-urgent",
+          "condition": {
+            "kind": "subject_state",
+            "state": "Stored",
+            "predicate": "priority == Urgent"
+          },
+          "subject": {
+            "entity": "parcels.locker.Parcel",
+            "effect": "updates",
+            "instance": {
+              "from": "supplied",
+              "field": {
+                "name": "parcel_code",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.ParcelCode"
+                },
+                "naming": {}
+              }
+            }
+          },
+          "test_strategy": "construct_input_in_state",
+          "emits": [
+            "parcels.locker.ParcelNoted"
+          ],
+          "payload": [
+            {
+              "event": "parcels.locker.ParcelNoted",
+              "fields": [
+                {
+                  "target": "parcel_code",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.ParcelCode"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "parcel_code",
+                    "type_ref": {
+                      "kind": "declared",
+                      "name": "parcels.locker.ParcelCode"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "sets": [
+            {
+              "target": "note",
+              "target_type": {
+                "kind": "optional",
+                "of": {
+                  "kind": "primitive",
+                  "name": "string"
+                }
+              },
+              "value": {
+                "kind": "literal",
+                "value": "urgent"
+              }
+            }
+          ]
+        },
+        {
+          "name": "stamped",
+          "condition": {
+            "kind": "otherwise"
+          },
+          "subject": {
+            "entity": "parcels.locker.Parcel",
+            "effect": "updates",
+            "instance": {
+              "from": "supplied",
+              "field": {
+                "name": "parcel_code",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.ParcelCode"
+                },
+                "naming": {}
+              }
+            }
+          },
+          "test_strategy": "default_branch",
+          "emits": [
+            "parcels.locker.ParcelNoted"
+          ],
+          "payload": [
+            {
+              "event": "parcels.locker.ParcelNoted",
+              "fields": [
+                {
+                  "target": "parcel_code",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.ParcelCode"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "parcel_code",
+                    "type_ref": {
+                      "kind": "declared",
+                      "name": "parcels.locker.ParcelCode"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "sets": [
+            {
+              "target": "note",
+              "target_type": {
+                "kind": "optional",
+                "of": {
+                  "kind": "primitive",
+                  "name": "string"
+                }
+              },
+              "value": {
+                "kind": "literal",
+                "value": "plain"
+              }
+            }
+          ]
+        },
+        {
+          "name": "no-such-parcel",
+          "condition": {
+            "kind": "unknown_instance"
+          },
+          "test_strategy": "send_unknown_identity",
+          "emits": [],
+          "error": "parcels.locker.NoSuchParcel"
+        }
+      ],
+      "naming": {}
+    },
+    "parcels.locker.TagParcel": {
+      "name": "parcels.locker.TagParcel",
+      "domain": "parcels.locker",
+      "input": [
+        {
+          "name": "parcel_code",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.ParcelCode"
+          },
+          "naming": {}
+        },
+        {
+          "name": "urgent",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.Priority"
+          },
+          "naming": {}
+        }
+      ],
+      "outcomes": [
+        {
+          "name": "tagged",
+          "condition": {
+            "kind": "subject_state",
+            "state": "Stored",
+            "predicate": "urgent == Urgent"
+          },
+          "subject": {
+            "entity": "parcels.locker.Parcel",
+            "effect": "updates",
+            "instance": {
+              "from": "supplied",
+              "field": {
+                "name": "parcel_code",
+                "type_ref": {
+                  "kind": "declared",
+                  "name": "parcels.locker.ParcelCode"
+                },
+                "naming": {}
+              }
+            }
+          },
+          "test_strategy": "construct_input_in_state",
+          "emits": [
+            "parcels.locker.ParcelNoted"
+          ],
+          "payload": [
+            {
+              "event": "parcels.locker.ParcelNoted",
+              "fields": [
+                {
+                  "target": "parcel_code",
+                  "target_type": {
+                    "kind": "declared",
+                    "name": "parcels.locker.ParcelCode"
+                  },
+                  "value": {
+                    "kind": "input_field",
+                    "field": "parcel_code",
+                    "type_ref": {
+                      "kind": "declared",
+                      "name": "parcels.locker.ParcelCode"
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "sets": [
+            {
+              "target": "note",
+              "target_type": {
+                "kind": "optional",
+                "of": {
+                  "kind": "primitive",
+                  "name": "string"
+                }
+              },
+              "value": {
+                "kind": "literal",
+                "value": "urgent"
+              }
+            }
+          ]
+        },
+        {
+          "name": "tag-plain",
+          "condition": {
+            "kind": "subject_state",
+            "state": "Stored",
+            "predicate": "urgent == Normal"
+          },
+          "test_strategy": "construct_input_in_state",
+          "emits": [],
+          "error": "parcels.locker.BlankNote"
+        },
+        {
+          "name": "tag-refused",
+          "condition": {
+            "kind": "subject_state",
+            "state": "Collected",
+            "predicate": null
+          },
+          "test_strategy": "construct_input_in_state",
+          "emits": [],
+          "error": "parcels.locker.ParcelStateConflict"
+        }
+      ],
+      "naming": {}
+    }
+  },
+  "events": {
+    "parcels.locker.LockerClosed": {
+      "name": "parcels.locker.LockerClosed",
+      "domain": "parcels.locker",
+      "fields": [
+        {
+          "name": "locker_id",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.LockerId"
+          },
+          "naming": {}
+        }
+      ],
+      "naming": {}
+    },
+    "parcels.locker.LockerInstalled": {
+      "name": "parcels.locker.LockerInstalled",
+      "domain": "parcels.locker",
+      "fields": [
+        {
+          "name": "locker_id",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.LockerId"
+          },
+          "naming": {}
+        },
+        {
+          "name": "site",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "string"
+          },
+          "naming": {}
+        }
+      ],
+      "naming": {}
+    },
+    "parcels.locker.ParcelCollected": {
+      "name": "parcels.locker.ParcelCollected",
+      "domain": "parcels.locker",
+      "fields": [
+        {
+          "name": "parcel_code",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.ParcelCode"
+          },
+          "naming": {}
+        }
+      ],
+      "naming": {}
+    },
+    "parcels.locker.ParcelDeposited": {
+      "name": "parcels.locker.ParcelDeposited",
+      "domain": "parcels.locker",
+      "fields": [
+        {
+          "name": "parcel_code",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.ParcelCode"
+          },
+          "naming": {}
+        },
+        {
+          "name": "locker_id",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.LockerId"
+          },
+          "naming": {}
+        }
+      ],
+      "naming": {}
+    },
+    "parcels.locker.ParcelDiscarded": {
+      "name": "parcels.locker.ParcelDiscarded",
+      "domain": "parcels.locker",
+      "fields": [
+        {
+          "name": "parcel_code",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.ParcelCode"
+          },
+          "naming": {}
+        }
+      ],
+      "naming": {}
+    },
+    "parcels.locker.ParcelNoted": {
+      "name": "parcels.locker.ParcelNoted",
+      "domain": "parcels.locker",
+      "fields": [
+        {
+          "name": "parcel_code",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.ParcelCode"
+          },
+          "naming": {}
+        }
+      ],
+      "naming": {}
+    }
+  },
+  "errors": {
+    "parcels.locker.BlankNote": {
+      "name": "parcels.locker.BlankNote",
+      "domain": "parcels.locker",
+      "summary": "The note is empty.",
+      "fields": []
+    },
+    "parcels.locker.FlagRefused": {
+      "name": "parcels.locker.FlagRefused",
+      "domain": "parcels.locker",
+      "summary": "An urgent flag is refused, naming the parcel's recipient and its locker's site.",
+      "fields": [
+        {
+          "name": "recipient",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "string"
+          },
+          "naming": {}
+        },
+        {
+          "name": "site",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "string"
+          },
+          "naming": {}
+        }
+      ]
+    },
+    "parcels.locker.LockerNotAccepting": {
+      "name": "parcels.locker.LockerNotAccepting",
+      "domain": "parcels.locker",
+      "summary": "The locker is closed to new parcels.",
+      "fields": []
+    },
+    "parcels.locker.LockerShut": {
+      "name": "parcels.locker.LockerShut",
+      "domain": "parcels.locker",
+      "summary": "The locker is shut for maintenance.",
+      "fields": []
+    },
+    "parcels.locker.NoSuchLocker": {
+      "name": "parcels.locker.NoSuchLocker",
+      "domain": "parcels.locker",
+      "summary": "No locker carries this identity.",
+      "fields": []
+    },
+    "parcels.locker.NoSuchParcel": {
+      "name": "parcels.locker.NoSuchParcel",
+      "domain": "parcels.locker",
+      "summary": "No parcel carries this code.",
+      "fields": []
+    },
+    "parcels.locker.NothingToNote": {
+      "name": "parcels.locker.NothingToNote",
+      "domain": "parcels.locker",
+      "summary": "The request carried no note.",
+      "fields": []
+    },
+    "parcels.locker.ParcelCodeTaken": {
+      "name": "parcels.locker.ParcelCodeTaken",
+      "domain": "parcels.locker",
+      "summary": "A parcel with this code is already deposited.",
+      "fields": []
+    },
+    "parcels.locker.ParcelStateConflict": {
+      "name": "parcels.locker.ParcelStateConflict",
+      "domain": "parcels.locker",
+      "summary": "The parcel is not in the locker.",
+      "fields": []
+    },
+    "parcels.locker.SignatureRefused": {
+      "name": "parcels.locker.SignatureRefused",
+      "domain": "parcels.locker",
+      "summary": "The recipient refused to sign, so the parcel stays in the locker.",
+      "fields": []
+    },
+    "parcels.locker.StaffLockerClosed": {
+      "name": "parcels.locker.StaffLockerClosed",
+      "domain": "parcels.locker",
+      "summary": "The locker is closed, and staff parcels go to the depot instead.",
+      "fields": []
+    },
+    "parcels.locker.UnknownRecipient": {
+      "name": "parcels.locker.UnknownRecipient",
+      "domain": "parcels.locker",
+      "summary": "Nobody by that name receives parcels here.",
+      "fields": []
+    }
+  },
+  "views": {
+    "parcels.locker.Lockers": {
+      "name": "parcels.locker.Lockers",
+      "domain": "parcels.locker",
+      "source": "parcels.locker.Locker",
+      "fields": [
+        {
+          "name": "locker_id",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.LockerId"
+          },
+          "naming": {}
+        },
+        {
+          "name": "site",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "string"
+          },
+          "naming": {}
+        },
+        {
+          "name": "accepting",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "boolean"
+          },
+          "naming": {}
+        }
+      ],
+      "consistency": "read_your_writes",
+      "assertion_style": "expect",
+      "naming": {}
+    },
+    "parcels.locker.ParcelRecords": {
+      "name": "parcels.locker.ParcelRecords",
+      "domain": "parcels.locker",
+      "source": "parcels.locker.Parcel",
+      "fields": [
+        {
+          "name": "parcel_code",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.ParcelCode"
+          },
+          "naming": {}
+        },
+        {
+          "name": "locker_id",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.LockerId"
+          },
+          "naming": {}
+        },
+        {
+          "name": "recipient",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "string"
+          },
+          "naming": {}
+        },
+        {
+          "name": "note",
+          "type_ref": {
+            "kind": "optional",
+            "of": {
+              "kind": "primitive",
+              "name": "string"
+            }
+          },
+          "naming": {}
+        },
+        {
+          "name": "state",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.Parcel.State"
+          },
+          "naming": {}
+        }
+      ],
+      "consistency": "read_your_writes",
+      "assertion_style": "expect",
+      "naming": {}
+    },
+    "parcels.locker.Parcels": {
+      "name": "parcels.locker.Parcels",
+      "domain": "parcels.locker",
+      "source": "parcels.locker.Parcel",
+      "fields": [
+        {
+          "name": "parcel_code",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.ParcelCode"
+          },
+          "naming": {}
+        },
+        {
+          "name": "locker_id",
+          "type_ref": {
+            "kind": "declared",
+            "name": "parcels.locker.LockerId"
+          },
+          "naming": {}
+        },
+        {
+          "name": "recipient",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "string"
+          },
+          "naming": {}
+        },
+        {
+          "name": "note",
+          "type_ref": {
+            "kind": "optional",
+            "of": {
+              "kind": "primitive",
+              "name": "string"
+            }
+          },
+          "naming": {}
+        }
+      ],
+      "consistency": "read_your_writes",
+      "assertion_style": "expect",
+      "naming": {}
+    }
+  },
+  "actors": {
+    "parcels.locker.Courier": {
+      "name": "parcels.locker.Courier",
+      "domain": "parcels.locker",
+      "may": [
+        "parcels.locker.CloseLocker",
+        "parcels.locker.DepositParcel",
+        "parcels.locker.DiscardParcel",
+        "parcels.locker.DropParcel",
+        "parcels.locker.FlagParcel",
+        "parcels.locker.InstallLocker",
+        "parcels.locker.NoteParcel",
+        "parcels.locker.ParkParcel",
+        "parcels.locker.RegisterParcel",
+        "parcels.locker.ReserveParcel",
+        "parcels.locker.RushParcel",
+        "parcels.locker.StampParcel",
+        "parcels.locker.TagParcel"
+      ],
+      "naming": {}
+    },
+    "parcels.locker.Recipient": {
+      "name": "parcels.locker.Recipient",
+      "domain": "parcels.locker",
+      "may": [
+        "parcels.locker.CollectParcel"
+      ],
+      "naming": {}
+    }
+  },
+  "bindings": {},
+  "components": {
+    "locker-service": {
+      "name": "locker-service",
+      "owns": [
+        "parcels.locker"
+      ],
+      "accepts": [
+        "parcels.locker.CloseLocker",
+        "parcels.locker.CollectParcel",
+        "parcels.locker.DepositParcel",
+        "parcels.locker.DiscardParcel",
+        "parcels.locker.DropParcel",
+        "parcels.locker.FlagParcel",
+        "parcels.locker.InstallLocker",
+        "parcels.locker.NoteParcel",
+        "parcels.locker.ParkParcel",
+        "parcels.locker.RegisterParcel",
+        "parcels.locker.ReserveParcel",
+        "parcels.locker.RushParcel",
+        "parcels.locker.StampParcel",
+        "parcels.locker.TagParcel"
+      ],
+      "publishes": [
+        "parcels.locker.LockerClosed",
+        "parcels.locker.LockerInstalled",
+        "parcels.locker.ParcelCollected",
+        "parcels.locker.ParcelDeposited",
+        "parcels.locker.ParcelDiscarded",
+        "parcels.locker.ParcelNoted"
+      ],
+      "reached_by": "network",
+      "naming": {
+        "summary": "Runs the parcel lockers and the parcels deposited in them."
+      }
+    }
+  },
+  "workloads": {}
+}

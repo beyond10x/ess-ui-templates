@@ -1,0 +1,60 @@
+type: ess-scenario/1
+domain: tally.board
+scenario: bump-and-total
+summary: Two counters of one team are bumped; the team's total is their sum, and the busier counter ranks first.
+
+arrange:
+  - instance: coffee
+    entity: tally.board.Counter
+  - instance: tea
+    entity: tally.board.Counter
+
+timeline:
+  - at: 2026-10-01T08:00:00Z
+    command: tally.board.CreateCounter
+    actor: tally.board.Member
+    input: {label: Coffee, team: Red}
+    outcome: created
+    capture: {instance: coffee, event: tally.board.CounterCreated, field: counter_id}
+
+  - at: 2026-10-01T08:00:01Z
+    command: tally.board.CreateCounter
+    actor: tally.board.Member
+    input: {label: Tea, team: Red}
+    outcome: created
+    capture: {instance: tea, event: tally.board.CounterCreated, field: counter_id}
+
+  - at: 2026-10-01T08:00:02Z
+    command: tally.board.BumpCounter
+    actor: tally.board.Member
+    input: {counter_id: {$instance: tea}}
+    outcome: bumped
+
+  - at: 2026-10-01T08:00:03Z
+    command: tally.board.BumpCounter
+    actor: tally.board.Member
+    input: {counter_id: {$instance: tea}}
+    outcome: bumped
+
+  - at: 2026-10-01T08:00:04Z
+    command: tally.board.BumpCounter
+    actor: tally.board.Member
+    input: {counter_id: {$instance: coffee}}
+    outcome: bumped
+
+  - at: 2026-10-01T08:00:05Z
+    command: tally.board.PinNote
+    actor: tally.board.Member
+    input: {text: Restock tea}
+    outcome: pinned
+
+assert:
+  - view: tally.board.HitsByTeam
+    contains: {team: Red, counters: 2, hits: 3}
+  - view: tally.board.Counters
+    at:
+      row: first
+      fields:
+        counter_id: {$instance: tea}
+  - view: tally.board.Notes
+    contains: {text: Restock tea}

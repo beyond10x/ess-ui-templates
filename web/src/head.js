@@ -1,0 +1,1 @@
+(function(){var t=window.ESS_UI_THEME||new URLSearchParams(location.search).get('theme');try{t=t||localStorage.getItem('ess-theme')}catch(e){}if(t!=='light'&&t!=='dark')t=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;})();

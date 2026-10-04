@@ -1,0 +1,589 @@
+domain: parcels.locker
+
+summary: Lockers at a site, and the parcels deposited in them until a recipient collects them.
+
+types:
+  - name: parcels.locker.LockerId
+    kind: newtype
+    of: Uuid
+
+  - name: parcels.locker.ParcelCode
+    kind: newtype
+    of: String
+
+  - name: parcels.locker.Priority
+    kind: enum
+    variants: [Urgent, Normal]
+
+entities:
+  - name: parcels.locker.Locker
+    identity:
+      name: locker_id
+      type: parcels.locker.LockerId
+    fields:
+      - name: site
+        type: String
+      - name: accepting
+        type: Boolean
+    lifecycle:
+      initial: Active
+      states: [Active]
+      terminal: [Active]
+
+  - name: parcels.locker.Parcel
+    identity:
+      name: parcel_code
+      type: parcels.locker.ParcelCode
+    fields:
+      - name: locker_id
+        type: parcels.locker.LockerId
+      - name: recipient
+        type: String
+      - name: note
+        type: Optional<String>
+    relations:
+      - name: locker
+        kind: references
+        target: parcels.locker.Locker
+        cardinality: one
+        via: locker_id
+    lifecycle:
+      initial: Stored
+      states: [Stored, Collected]
+      terminal: [Collected]
+      transitions:
+        - name: collect
+          from: [Stored]
+          to: Collected
+
+actors:
+  - name: parcels.locker.Courier
+    may:
+      - parcels.locker.InstallLocker
+      - parcels.locker.CloseLocker
+      - parcels.locker.DepositParcel
+      - parcels.locker.NoteParcel
+      - parcels.locker.DiscardParcel
+      - parcels.locker.RegisterParcel
+      - parcels.locker.ReserveParcel
+      - parcels.locker.DropParcel
+      - parcels.locker.FlagParcel
+      - parcels.locker.TagParcel
+      - parcels.locker.ParkParcel
+      - parcels.locker.RushParcel
+      - parcels.locker.StampParcel
+  - name: parcels.locker.Recipient
+    may:
+      - parcels.locker.CollectParcel
+
+errors:
+  - name: parcels.locker.ParcelCodeTaken
+    summary: A parcel with this code is already deposited.
+    fields: []
+  - name: parcels.locker.NoSuchLocker
+    summary: No locker carries this identity.
+    fields: []
+  - name: parcels.locker.LockerNotAccepting
+    summary: The locker is closed to new parcels.
+    fields: []
+  - name: parcels.locker.NoSuchParcel
+    summary: No parcel carries this code.
+    fields: []
+  - name: parcels.locker.NothingToNote
+    summary: The request carried no note.
+    fields: []
+  - name: parcels.locker.UnknownRecipient
+    summary: Nobody by that name receives parcels here.
+    fields: []
+  - name: parcels.locker.BlankNote
+    summary: The note is empty.
+    fields: []
+  - name: parcels.locker.SignatureRefused
+    summary: The recipient refused to sign, so the parcel stays in the locker.
+    fields: []
+  - name: parcels.locker.ParcelStateConflict
+    summary: The parcel is not in the locker.
+    fields: []
+  - name: parcels.locker.StaffLockerClosed
+    summary: The locker is closed, and staff parcels go to the depot instead.
+    fields: []
+  - name: parcels.locker.LockerShut
+    summary: The locker is shut for maintenance.
+    fields: []
+  - name: parcels.locker.FlagRefused
+    summary: An urgent flag is refused, naming the parcel's recipient and its locker's site.
+    fields:
+      - name: recipient
+        type: String
+      - name: site
+        type: String
+
+commands:
+  - name: parcels.locker.InstallLocker
+    input:
+      - name: site
+        type: String
+        example: North Station
+    outcomes:
+      - name: installed
+        creates: parcels.locker.Locker
+        instance: locker_id
+        sets:
+          site: input.site
+          accepting: true
+        emits: [parcels.locker.LockerInstalled]
+        payload:
+          parcels.locker.LockerInstalled:
+            locker_id: {generated: true}
+            site: input.site
+
+  - name: parcels.locker.CloseLocker
+    input:
+      - name: locker_id
+        type: parcels.locker.LockerId
+    outcomes:
+      - name: closed
+        updates: parcels.locker.Locker
+        instance: locker_id
+        sets:
+          accepting: false
+        emits: [parcels.locker.LockerClosed]
+        payload:
+          parcels.locker.LockerClosed:
+            locker_id: input.locker_id
+      - name: no-such-locker
+        unknown_instance: true
+        error: parcels.locker.NoSuchLocker
+
+  - name: parcels.locker.DepositParcel
+    input:
+      - name: parcel_code
+        type: parcels.locker.ParcelCode
+      - name: locker_id
+        type: parcels.locker.LockerId
+      - name: recipient
+        type: String
+        example: Ada
+    outcomes:
+      - name: already-deposited
+        existing_instance: true
+        error: parcels.locker.ParcelCodeTaken
+      - name: no-locker
+        when_related: {via: input.locker_id, exists: false}
+        error: parcels.locker.NoSuchLocker
+      - name: express
+        when: recipient == "vip"
+        creates: parcels.locker.Parcel
+        instance: parcel_code
+        sets:
+          locker_id: input.locker_id
+          recipient: input.recipient
+        emits: [parcels.locker.ParcelDeposited]
+        payload:
+          parcels.locker.ParcelDeposited:
+            parcel_code: input.parcel_code
+            locker_id: input.locker_id
+      - name: locker-closed
+        when_related: {via: input.locker_id, predicate: accepting == false}
+        error: parcels.locker.LockerNotAccepting
+      - name: bad-recipient
+        when: recipient == "nobody"
+        error: parcels.locker.UnknownRecipient
+      - name: deposited
+        creates: parcels.locker.Parcel
+        instance: parcel_code
+        sets:
+          locker_id: input.locker_id
+          recipient: input.recipient
+        emits: [parcels.locker.ParcelDeposited]
+        payload:
+          parcels.locker.ParcelDeposited:
+            parcel_code: input.parcel_code
+            locker_id: input.locker_id
+
+  - name: parcels.locker.RegisterParcel
+    input:
+      - name: parcel_code
+        type: Optional<parcels.locker.ParcelCode>
+      - name: locker_id
+        type: parcels.locker.LockerId
+      - name: recipient
+        type: String
+    outcomes:
+      - name: code-taken
+        existing_instance: true
+        error: parcels.locker.ParcelCodeTaken
+      - name: registered
+        creates: parcels.locker.Parcel
+        instance: parcel_code
+        sets:
+          locker_id: input.locker_id
+          recipient: input.recipient
+        emits: [parcels.locker.ParcelDeposited]
+        payload:
+          parcels.locker.ParcelDeposited:
+            parcel_code: {input: parcel_code, else: {generated: true}}
+            locker_id: input.locker_id
+
+  - name: parcels.locker.ReserveParcel
+    input:
+      - name: parcel_code
+        type: parcels.locker.ParcelCode
+      - name: locker_id
+        type: parcels.locker.LockerId
+      - name: recipient
+        type: String
+    outcomes:
+      - name: no-locker
+        when_related: {via: input.locker_id, exists: false}
+        error: parcels.locker.NoSuchLocker
+      - name: staff-closed
+        when_related: {via: input.locker_id, predicate: accepting == false}
+        when: recipient == "staff"
+        error: parcels.locker.StaffLockerClosed
+      - name: locker-closed
+        when_related: {via: input.locker_id, predicate: accepting == false}
+        when: recipient != "staff"
+        error: parcels.locker.LockerNotAccepting
+      - name: reserved
+        creates: parcels.locker.Parcel
+        instance: parcel_code
+        sets:
+          locker_id: input.locker_id
+          recipient: input.recipient
+        emits: [parcels.locker.ParcelDeposited]
+        payload:
+          parcels.locker.ParcelDeposited:
+            parcel_code: input.parcel_code
+            locker_id: input.locker_id
+
+  - name: parcels.locker.DropParcel
+    input:
+      - name: parcel_code
+        type: parcels.locker.ParcelCode
+      - name: locker_id
+        type: parcels.locker.LockerId
+      - name: recipient
+        type: String
+    outcomes:
+      - name: no-locker
+        when_related: {via: input.locker_id, exists: false}
+        error: parcels.locker.NoSuchLocker
+      - name: locker-closed
+        when_related: {via: input.locker_id, predicate: accepting == false}
+        error: parcels.locker.LockerNotAccepting
+      - name: locker-shut
+        when_related: {via: input.locker_id, predicate: accepting == false}
+        error: parcels.locker.LockerShut
+      - name: dropped
+        creates: parcels.locker.Parcel
+        instance: parcel_code
+        sets:
+          locker_id: input.locker_id
+          recipient: input.recipient
+        emits: [parcels.locker.ParcelDeposited]
+        payload:
+          parcels.locker.ParcelDeposited:
+            parcel_code: input.parcel_code
+            locker_id: input.locker_id
+
+  - name: parcels.locker.NoteParcel
+    input:
+      - name: parcel_code
+        type: parcels.locker.ParcelCode
+      - name: note
+        type: Optional<String>
+    outcomes:
+      - name: noted
+        when: defined(note)
+        updates: parcels.locker.Parcel
+        instance: parcel_code
+        sets:
+          note: input.note
+        emits: [parcels.locker.ParcelNoted]
+        payload:
+          parcels.locker.ParcelNoted:
+            parcel_code: input.parcel_code
+      - name: blank-note
+        when: note == ""
+        error: parcels.locker.BlankNote
+      - name: nothing-to-note
+        error: parcels.locker.NothingToNote
+      - name: no-such-parcel
+        unknown_instance: true
+        error: parcels.locker.NoSuchParcel
+
+  - name: parcels.locker.CollectParcel
+    input:
+      - name: parcel_code
+        type: parcels.locker.ParcelCode
+      - name: signature
+        type: Optional<String>
+    outcomes:
+      - name: signature-refused
+        when: signature == "refused"
+        error: parcels.locker.SignatureRefused
+      - name: collected
+        moves: parcels.locker.Parcel.collect
+        instance: parcel_code
+        emits: [parcels.locker.ParcelCollected]
+        payload:
+          parcels.locker.ParcelCollected:
+            parcel_code: input.parcel_code
+      - name: not-in-locker
+        wrong_state: true
+        error: parcels.locker.ParcelStateConflict
+      - name: no-such-parcel
+        unknown_instance: true
+        error: parcels.locker.NoSuchParcel
+
+  - name: parcels.locker.DiscardParcel
+    input:
+      - name: parcel_code
+        type: parcels.locker.ParcelCode
+    outcomes:
+      - name: discarded
+        deletes: parcels.locker.Parcel
+        instance: parcel_code
+        emits: [parcels.locker.ParcelDiscarded]
+        payload:
+          parcels.locker.ParcelDiscarded:
+            parcel_code: input.parcel_code
+      - name: no-such-parcel
+        unknown_instance: true
+        error: parcels.locker.NoSuchParcel
+
+  - name: parcels.locker.FlagParcel
+    input:
+      - name: parcel_code
+        type: parcels.locker.ParcelCode
+      - name: flag
+        type: Optional<String>
+    outcomes:
+      - name: flag-refused
+        when_subject:
+          predicate: recipient != "zzz"
+        when: flag == "urgent"
+        error: parcels.locker.FlagRefused
+        payload:
+          parcels.locker.FlagRefused:
+            recipient: {subject: recipient}
+            site: {related: {via: locker_id, field: site}}
+      - name: flagged
+        updates: parcels.locker.Parcel
+        instance: parcel_code
+        sets:
+          note: input.flag
+        emits: [parcels.locker.ParcelNoted]
+        payload:
+          parcels.locker.ParcelNoted:
+            parcel_code: input.parcel_code
+      - name: no-such-parcel
+        unknown_instance: true
+        error: parcels.locker.NoSuchParcel
+
+  - name: parcels.locker.TagParcel
+    input:
+      - name: parcel_code
+        type: parcels.locker.ParcelCode
+      - name: urgent
+        type: parcels.locker.Priority
+    outcomes:
+      - name: tagged
+        when_subject_state: Stored
+        when: urgent == Urgent
+        updates: parcels.locker.Parcel
+        instance: parcel_code
+        sets:
+          note: "urgent"
+        emits: [parcels.locker.ParcelNoted]
+        payload:
+          parcels.locker.ParcelNoted:
+            parcel_code: input.parcel_code
+      - name: tag-plain
+        when_subject_state: Stored
+        when: urgent == Normal
+        error: parcels.locker.BlankNote
+      - name: tag-refused
+        when_subject_state: Collected
+        error: parcels.locker.ParcelStateConflict
+
+  - name: parcels.locker.ParkParcel
+    input:
+      - name: parcel_code
+        type: parcels.locker.ParcelCode
+      - name: locker_id
+        type: parcels.locker.LockerId
+      - name: recipient
+        type: String
+    outcomes:
+      - name: no-locker
+        when_related: {via: input.locker_id, exists: false}
+        error: parcels.locker.NoSuchLocker
+      - name: locker-closed
+        when_related: {via: input.locker_id, predicate: accepting == false}
+        error: parcels.locker.LockerNotAccepting
+      - name: parked
+        when: "true"
+        creates: parcels.locker.Parcel
+        instance: parcel_code
+        sets:
+          locker_id: input.locker_id
+          recipient: input.recipient
+        emits: [parcels.locker.ParcelDeposited]
+        payload:
+          parcels.locker.ParcelDeposited:
+            parcel_code: input.parcel_code
+            locker_id: input.locker_id
+
+  - name: parcels.locker.RushParcel
+    input:
+      - name: parcel_code
+        type: parcels.locker.ParcelCode
+      - name: locker_id
+        type: parcels.locker.LockerId
+      - name: recipient
+        type: String
+    outcomes:
+      - name: no-locker
+        when_related: {via: input.locker_id, exists: false}
+        error: parcels.locker.NoSuchLocker
+      - name: locker-closed
+        when_related: {via: input.locker_id, predicate: accepting == false}
+        error: parcels.locker.LockerNotAccepting
+      - name: rush-a
+        when: recipient == "vip"
+        creates: parcels.locker.Parcel
+        instance: parcel_code
+        sets:
+          locker_id: input.locker_id
+          recipient: input.recipient
+        emits: [parcels.locker.ParcelDeposited]
+        payload:
+          parcels.locker.ParcelDeposited:
+            parcel_code: input.parcel_code
+            locker_id: input.locker_id
+      - name: rush-b
+        when: recipient != "nobody"
+        creates: parcels.locker.Parcel
+        instance: parcel_code
+        sets:
+          locker_id: input.locker_id
+          recipient: "rushed"
+        emits: [parcels.locker.ParcelDeposited]
+        payload:
+          parcels.locker.ParcelDeposited:
+            parcel_code: input.parcel_code
+            locker_id: input.locker_id
+      - name: rush-held
+        creates: parcels.locker.Parcel
+        instance: parcel_code
+        sets:
+          locker_id: input.locker_id
+          recipient: input.recipient
+        emits: [parcels.locker.ParcelDeposited]
+        payload:
+          parcels.locker.ParcelDeposited:
+            parcel_code: input.parcel_code
+            locker_id: input.locker_id
+
+  - name: parcels.locker.StampParcel
+    input:
+      - name: parcel_code
+        type: parcels.locker.ParcelCode
+      - name: priority
+        type: Optional<parcels.locker.Priority>
+    outcomes:
+      - name: stamped-urgent
+        when_subject_state: Stored
+        when: priority == Urgent
+        updates: parcels.locker.Parcel
+        instance: parcel_code
+        sets:
+          note: "urgent"
+        emits: [parcels.locker.ParcelNoted]
+        payload:
+          parcels.locker.ParcelNoted:
+            parcel_code: input.parcel_code
+      - name: stamped
+        updates: parcels.locker.Parcel
+        instance: parcel_code
+        sets:
+          note: "plain"
+        emits: [parcels.locker.ParcelNoted]
+        payload:
+          parcels.locker.ParcelNoted:
+            parcel_code: input.parcel_code
+      - name: no-such-parcel
+        unknown_instance: true
+        error: parcels.locker.NoSuchParcel
+
+events:
+  - name: parcels.locker.LockerInstalled
+    fields:
+      - name: locker_id
+        type: parcels.locker.LockerId
+      - name: site
+        type: String
+  - name: parcels.locker.LockerClosed
+    fields:
+      - name: locker_id
+        type: parcels.locker.LockerId
+  - name: parcels.locker.ParcelDeposited
+    fields:
+      - name: parcel_code
+        type: parcels.locker.ParcelCode
+      - name: locker_id
+        type: parcels.locker.LockerId
+  - name: parcels.locker.ParcelNoted
+    fields:
+      - name: parcel_code
+        type: parcels.locker.ParcelCode
+  - name: parcels.locker.ParcelCollected
+    fields:
+      - name: parcel_code
+        type: parcels.locker.ParcelCode
+  - name: parcels.locker.ParcelDiscarded
+    fields:
+      - name: parcel_code
+        type: parcels.locker.ParcelCode
+
+views:
+  - name: parcels.locker.Lockers
+    source: parcels.locker.Locker
+    consistency: read_your_writes
+    fields:
+      - name: locker_id
+        type: parcels.locker.LockerId
+      - name: site
+        type: String
+      - name: accepting
+        type: Boolean
+
+  - name: parcels.locker.Parcels
+    source: parcels.locker.Parcel
+    consistency: read_your_writes
+    fields:
+      - name: parcel_code
+        type: parcels.locker.ParcelCode
+      - name: locker_id
+        type: parcels.locker.LockerId
+      - name: recipient
+        type: String
+      - name: note
+        type: Optional<String>
+
+  - name: parcels.locker.ParcelRecords
+    source: parcels.locker.Parcel
+    consistency: read_your_writes
+    fields:
+      - name: parcel_code
+        type: parcels.locker.ParcelCode
+      - name: locker_id
+        type: parcels.locker.LockerId
+      - name: recipient
+        type: String
+      - name: note
+        type: Optional<String>
+      - name: state
+        type: parcels.locker.Parcel.State

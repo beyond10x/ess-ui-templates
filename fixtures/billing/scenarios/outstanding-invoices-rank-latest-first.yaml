@@ -1,0 +1,80 @@
+# An authored scenario: what the specification cannot oblige, written down by a person.
+#
+# `OutstandingInvoices` declares `order_by: issued_at desc`, so synthesis can arrange two rows and
+# require that they are *in* that order — `ess conform synthesize` emits exactly that scenario. What
+# it cannot emit is a claim about *which* row is first, and the reason is on `ViewExpectation::At`:
+# §8 permits a target to be shared, so a row this scenario did not create could outrank both of
+# these, and "first" would then be a claim about the other user of the target. A person looking at
+# this system knows that is not the case for it, and says so here. That is the whole difference
+# between the two populations: this one is only as good as the person who wrote it.
+type: ess-scenario/1
+domain: billing.invoice
+scenario: outstanding-invoices-rank-latest-first
+summary: The invoice issued second is the first row of OutstandingInvoices, and the first is last.
+
+# Whose instances the timeline acts on. Declared before the timeline binds them, so a reference can
+# be refused by name rather than by whatever it resolved to at run time.
+arrange:
+  - instance: earlier
+    entity: billing.invoice.Invoice
+  - instance: later
+    entity: billing.invoice.Invoice
+
+# The instants order the file and reach no runner. What they buy is that moving two of these blocks
+# is refused rather than silently meaning something else.
+timeline:
+  - at: 2026-01-05T09:00:00Z
+    command: billing.invoice.CreateInvoice
+    actor: billing.invoice.Customer
+    input:
+      account_id: 3f1d5b7e-0000-4000-8000-000000000001
+      customer_email: earlier@example.test
+      amount: {amount: 120, currency: EUR}
+    outcome: accepted
+    events:
+      - event: billing.invoice.InvoiceCreated
+        payload:
+          customer_email: earlier@example.test
+          amount: {amount: 120, currency: EUR}
+    capture: {instance: earlier, event: billing.invoice.InvoiceCreated, field: invoice_id}
+
+  - at: 2026-01-05T09:00:01Z
+    command: billing.invoice.IssueInvoice
+    input:
+      invoice_id: {$instance: earlier}
+    outcome: issued
+
+  - at: 2026-01-05T09:00:02Z
+    command: billing.invoice.CreateInvoice
+    actor: billing.invoice.Customer
+    input:
+      account_id: 3f1d5b7e-0000-4000-8000-000000000001
+      customer_email: later@example.test
+      amount: {amount: 340, currency: EUR}
+    outcome: accepted
+    events:
+      - event: billing.invoice.InvoiceCreated
+        payload:
+          customer_email: later@example.test
+    capture: {instance: later, event: billing.invoice.InvoiceCreated, field: invoice_id}
+
+  - at: 2026-01-05T09:00:03Z
+    command: billing.invoice.IssueInvoice
+    input:
+      invoice_id: {$instance: later}
+    outcome: issued
+
+# The order the position is relative to is the view's own `order_by:`, filled in by the compiler.
+# Restating it here would be a second copy of one truth, and the copy is the one that goes stale.
+assert:
+  - view: billing.invoice.OutstandingInvoices
+    at:
+      row: first
+      fields:
+        invoice_id: {$instance: later}
+
+  - view: billing.invoice.OutstandingInvoices
+    at:
+      row: last
+      fields:
+        invoice_id: {$instance: earlier}
