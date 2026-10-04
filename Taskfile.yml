@@ -6,7 +6,7 @@ env:
 vars:
   BIN: '{{.CARGO_TARGET_DIR | default "target"}}/debug/ess-ui'
   SCREENS: '{{.SCREENS | default (printf "%s/.cache/b10x-design/ess-ui-screens" .HOME)}}'
-  DOCS_SYSTEM_PIN: 929f9653d14212d0595e8dbc704a4e6a61cabd9e
+  DOCS_SYSTEM_PIN: acbc7a39a2a495114a507a92e0a0c4c933e81d8f
   BILLING_REPO: --repo-url https://github.com/beyond10x/ess --repo-label GitHub --spec-root examples/billing --ref 4d6a4ecafc0feb4e11e4bee777b19c7351fa3647
 
 tasks:
