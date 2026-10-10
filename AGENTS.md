@@ -45,3 +45,10 @@ the `at` view expectation. Not executed: set effects (`instances`, `affects`), `
 ## Commands
 
 `task check` · `task page` · `task screenshots` · `task fixtures` · `task schema`
+
+## Serves
+
+This repository advances these objectives from `atlas/ROADMAP.md`:
+
+- O2: renders an ESS specification as a page that executes its scenarios at build time and shows
+  the gate and conformance results beside each declaration.
