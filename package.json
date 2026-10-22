@@ -19,6 +19,6 @@
     "react": ">=18"
   },
   "devDependencies": {
-    "@beyond10x/docs-system": "github:beyond10x/docs-system#acbc7a39a2a495114a507a92e0a0c4c933e81d8f"
+    "@beyond10x/docs-system": "github:beyond10x/docs-system#5fd348a9e49a96832f70af7917e6cd2db2c32abe"
   }
 }
