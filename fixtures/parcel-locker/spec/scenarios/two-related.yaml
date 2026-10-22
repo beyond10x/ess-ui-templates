@@ -1,7 +1,7 @@
 type: ess-scenario/1
 domain: parcels.locker
 scenario: two-related
-summary: Two closed-locker refusals hold on the same locker; the model leaves the answer open, so an implementation may give either.
+summary: Two closed-locker refusals hold on the same locker; the first declared, locker-closed, answers both drops.
 
 arrange:
   - instance: locker
@@ -37,7 +37,7 @@ timeline:
     command: parcels.locker.DropParcel
     actor: parcels.locker.Courier
     input: {parcel_code: PX-82, locker_id: {$instance: locker}, recipient: Ada}
-    outcome: locker-shut
+    outcome: locker-closed
 
 assert:
   - view: parcels.locker.Parcels

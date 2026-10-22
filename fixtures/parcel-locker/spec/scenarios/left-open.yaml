@@ -1,7 +1,7 @@
 type: ess-scenario/1
 domain: parcels.locker
 scenario: left-open
-summary: An accepting express guard that holds on a closed locker overlaps the closed-locker refusal; the model leaves the answer open, so an implementation may give either.
+summary: An accepting express guard that holds on a closed locker overlaps the closed-locker refusal; the express branch, declared first, answers both deposits.
 
 arrange:
   - instance: locker
@@ -31,7 +31,7 @@ timeline:
     command: parcels.locker.DepositParcel
     actor: parcels.locker.Courier
     input: {parcel_code: PX-61, locker_id: {$instance: locker}, recipient: vip}
-    outcome: locker-closed
+    outcome: express
 
 assert:
   - view: parcels.locker.Parcels

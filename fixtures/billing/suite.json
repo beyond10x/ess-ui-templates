@@ -1,10 +1,11 @@
 {
   "provenance": {
-    "suite_version": "ess-conformance/4",
+    "suite_version": "ess-conformance/34",
     "system": "billing",
     "specification_version": "v3",
-    "spec_digest": "1e7906786567af32118eb2d0a8c3fcafa16c32c9649a80b60487fd2eeebc4c9c",
-    "contract_digest": "a21fd36f0055057629f4c235962163cdd34a3d178aa068925bcb53be623af301"
+    "spec_digest": "096efa38ec46e97a32f81b72193e43114df1156464648a885134ffafc9ac9648",
+    "contract_digest": "c9ecfdf5bed1bcb88068dad060895f16ca73de361204ae488d6f0d39477f6f79",
+    "scenario_initial_state": "empty"
   },
   "scenarios": {
     "billing.email.SendEmail/outcome/failed": {
@@ -286,8 +287,14 @@
           }
         },
         {
-          "step": "expect_event",
+          "step": "expect_event_values",
           "event": "billing.invoice.InvoiceCancelled",
+          "payload": {
+            "invoice_id": {
+              "kind": "instance",
+              "instance": "invoice"
+            }
+          },
           "shape": {
             "invoice_id": {
               "holds": "primitive",
@@ -358,6 +365,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice-2"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-02T00:00:00Z"
             }
           }
         },
@@ -411,6 +422,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice-3"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-03T00:00:00Z"
             }
           }
         },
@@ -789,6 +804,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice-2"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-02T00:00:00Z"
             }
           }
         },
@@ -842,6 +861,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice-3"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-03T00:00:00Z"
             }
           }
         },
@@ -1369,6 +1392,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-01T00:00:00Z"
             }
           }
         },
@@ -1499,6 +1526,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-01T00:00:00Z"
             }
           }
         },
@@ -1835,6 +1866,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-01T00:00:00Z"
             }
           }
         },
@@ -2335,6 +2370,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-01T00:00:00Z"
             }
           }
         },
@@ -2352,6 +2391,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-01T00:00:00Z"
             }
           }
         },
@@ -2501,6 +2544,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-01T00:00:00Z"
             }
           }
         },
@@ -2713,6 +2760,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-01T00:00:00Z"
             }
           }
         },
@@ -2754,6 +2805,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-01T00:00:00Z"
             }
           }
         },
@@ -2914,6 +2969,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-01T00:00:00Z"
             }
           }
         },
@@ -3133,8 +3192,14 @@
           }
         },
         {
-          "step": "expect_event",
+          "step": "expect_event_values",
           "event": "billing.invoice.InvoiceCancelled",
+          "payload": {
+            "invoice_id": {
+              "kind": "instance",
+              "instance": "invoice"
+            }
+          },
           "shape": {
             "invoice_id": {
               "holds": "primitive",
@@ -3205,6 +3270,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice-2"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-02T00:00:00Z"
             }
           }
         },
@@ -3258,6 +3327,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice-3"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-03T00:00:00Z"
             }
           }
         },
@@ -3378,6 +3451,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice-4"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-04T00:00:00Z"
             }
           }
         },
@@ -3406,8 +3483,14 @@
           }
         },
         {
-          "step": "expect_event",
+          "step": "expect_event_values",
           "event": "billing.invoice.InvoiceCancelled",
+          "payload": {
+            "invoice_id": {
+              "kind": "instance",
+              "instance": "invoice-4"
+            }
+          },
           "shape": {
             "invoice_id": {
               "holds": "primitive",
@@ -3562,6 +3645,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-01T00:00:00Z"
             }
           }
         },
@@ -3573,8 +3660,14 @@
           }
         },
         {
-          "step": "expect_event",
+          "step": "expect_event_values",
           "event": "billing.invoice.InvoiceIssued",
+          "payload": {
+            "invoice_id": {
+              "kind": "instance",
+              "instance": "invoice"
+            }
+          },
           "shape": {
             "invoice_id": {
               "holds": "primitive",
@@ -3645,6 +3738,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice-2"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-02T00:00:00Z"
             }
           }
         },
@@ -3700,6 +3797,10 @@
               "invoice_id": {
                 "kind": "instance",
                 "instance": "invoice"
+              },
+              "issued_at": {
+                "kind": "literal",
+                "value": "2020-01-01T00:00:00Z"
               },
               "total": {
                 "kind": "literal",
@@ -3841,6 +3942,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-01T00:00:00Z"
             }
           }
         },
@@ -3876,12 +3981,19 @@
           }
         },
         {
-          "step": "expect_event",
+          "step": "expect_event_values",
           "event": "billing.invoice.InvoicePaid",
           "payload": {
             "amount": {
-              "amount": 1.0,
-              "currency": "amount.currency"
+              "kind": "literal",
+              "value": {
+                "amount": 1.0,
+                "currency": "amount.currency"
+              }
+            },
+            "invoice_id": {
+              "kind": "instance",
+              "instance": "invoice"
             }
           },
           "shape": {
@@ -3962,6 +4074,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice-2"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-02T00:00:00Z"
             }
           }
         },
@@ -4015,6 +4131,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice-3"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-03T00:00:00Z"
             }
           }
         },
@@ -4219,6 +4339,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-01T00:00:00Z"
             }
           }
         },
@@ -4230,8 +4354,14 @@
           }
         },
         {
-          "step": "expect_event",
+          "step": "expect_event_values",
           "event": "billing.invoice.InvoiceIssued",
+          "payload": {
+            "invoice_id": {
+              "kind": "instance",
+              "instance": "invoice"
+            }
+          },
           "shape": {
             "invoice_id": {
               "holds": "primitive",
@@ -4302,6 +4432,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice-2"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-02T00:00:00Z"
             }
           }
         },
@@ -4357,6 +4491,10 @@
               "invoice_id": {
                 "kind": "instance",
                 "instance": "invoice"
+              },
+              "issued_at": {
+                "kind": "literal",
+                "value": "2020-01-01T00:00:00Z"
               },
               "total": {
                 "kind": "literal",
@@ -4462,6 +4600,10 @@
             "invoice_id": {
               "kind": "literal",
               "value": "00000000-0000-4000-8000-bf63819dc626"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-01T00:00:00Z"
             }
           }
         },
@@ -4703,6 +4845,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-01T00:00:00Z"
             }
           }
         },
@@ -4923,6 +5069,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-01T00:00:00Z"
             }
           }
         },
@@ -4958,12 +5108,19 @@
           }
         },
         {
-          "step": "expect_event",
+          "step": "expect_event_values",
           "event": "billing.invoice.InvoicePaid",
           "payload": {
             "amount": {
-              "amount": 1.0,
-              "currency": "amount.currency"
+              "kind": "literal",
+              "value": {
+                "amount": 1.0,
+                "currency": "amount.currency"
+              }
+            },
+            "invoice_id": {
+              "kind": "instance",
+              "instance": "invoice"
             }
           },
           "shape": {
@@ -5044,6 +5201,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice-2"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-02T00:00:00Z"
             }
           }
         },
@@ -5097,6 +5258,10 @@
             "invoice_id": {
               "kind": "instance",
               "instance": "invoice-3"
+            },
+            "issued_at": {
+              "kind": "literal",
+              "value": "2020-01-03T00:00:00Z"
             }
           }
         },

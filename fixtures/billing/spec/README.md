@@ -21,6 +21,12 @@ Two bounded contexts, a command with **two outcomes**, a command with an outcome
 decide, events, both consistency levels, a filtered view, actors, and a state machine whose illegal
 transitions are illegal by absence.
 
+`IssueInvoice` requires an `issued_at: Timestamp` input and stores that value. Callers must supply
+the issuing instant; the example no longer assigns it from an internal counter. The authored
+latest-first scenario supplies two distinct timestamps explicitly. Its timeline `at` labels order
+the scenario document and do not set a target clock. This is an example command API change, with no
+new ESS or conformance format version.
+
 A test — `the_example_exercises_every_construct_the_model_has` — asserts that every type body, every
 primitive, `Optional`/`List`/`Map`, both consistency levels, an actor with grants and one without, an
 error carrying a payload and a command with an overridden wire name all appear here. **A construct

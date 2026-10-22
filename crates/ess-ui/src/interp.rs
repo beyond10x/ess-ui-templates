@@ -41,6 +41,7 @@ use ess_domain::view::{AggregateFunction, Direction};
 use ess_primitives::facts::Number;
 use ess_primitives::node::Node;
 use ess_primitives::predicate::Predicate;
+use ess_primitives::time::Rfc3339Instant;
 
 use crate::facts::Facts;
 
@@ -302,7 +303,7 @@ impl<'ir> Interp<'ir> {
     }
 
     /// A new instance's identity the model leaves to the implementation: a Uuid as ESS mints it,
-    /// and a String (the same text) or an Integer (the counter) where ESS mints Uuids only. A value
+    /// a String as `generated-<n>` and an Integer as 1 + n, as ESS 0.67.0 mints them. A value
     /// already held is skipped; a type whose newtypes carry invariants is not minted.
     fn mint_identity(&self, t: &ResolvedTypeRef, w: &mut World, held: &[String]) -> Option<Node> {
         if t.is_optional() {
@@ -327,12 +328,17 @@ impl<'ir> Interp<'ir> {
             Rep::Prim(p @ (Primitive::Uuid | Primitive::String | Primitive::Integer)) => p,
             _ => return None,
         };
+        // Workaround for ESS 0.67.0: its interpreter mints these values itself, but its minting
+        // (`interpret::execute::minted`, `witness::fields`) is not public, so the page repeats its
+        // shapes to stay in lockstep: the Uuid text, `generated-<n>`, and 1 + n.
         loop {
             w.minted += 1;
-            let v = if name == Primitive::Integer {
-                Node::Number(Number::from(i64::try_from(w.minted).unwrap_or(i64::MAX)))
-            } else {
-                Node::Text(format!("00000000-0000-4000-8000-{:012}", w.minted))
+            let v = match name {
+                Primitive::Integer => Node::Number(Number::from(
+                    i64::try_from(w.minted).map_or(i64::MAX, |n| n.saturating_add(1)),
+                )),
+                Primitive::String => Node::Text(format!("generated-{}", w.minted)),
+                _ => Node::Text(format!("00000000-0000-4000-8000-{:012}", w.minted)),
             };
             if !held.contains(&key_of(&v)) {
                 return Some(v);
@@ -834,13 +840,16 @@ impl<'ir> Interp<'ir> {
                 Val::Is(input.get(field).filter(|v| **v != Node::Null).cloned())
             }
             ResolvedPayloadValue::Literal { value } => Val::Is(Some(self.literal(t, value)?)),
-            ResolvedPayloadValue::Generated => Val::Is(self.mint(t, work)),
+            ResolvedPayloadValue::Generated { .. } => Val::Is(self.mint(t, work)),
             ResolvedPayloadValue::InputOrGenerated {
                 field, otherwise, ..
             } => match input.get(field).filter(|v| **v != Node::Null) {
                 Some(v) => Val::Is(Some(v.clone())),
                 None => match otherwise {
-                    Some(lit) => Val::Is(Some(self.literal(t, lit)?)),
+                    Some(fallback) => match fallback.literal() {
+                        Some(lit) => Val::Is(Some(self.literal(t, lit)?)),
+                        None => return undetermined(format!("the fallback `{fallback}`")),
+                    },
                     None => Val::Is(self.mint(t, work)),
                 },
             },
@@ -1303,12 +1312,31 @@ impl<'ir> Interp<'ir> {
         }
         for r in v.order_by.iter().rev() {
             let desc = r.direction == Direction::Descending;
+            // A `Timestamp` ranks by its instant, as ESS 0.67.0's interpreted views rank it.
+            let instant = v.fields.iter().any(|f| {
+                f.name == r.field
+                    && matches!(self.rep(&f.type_ref), Rep::Prim(Primitive::Timestamp))
+            });
             let (mut present, absent): (Vec<_>, Vec<_>) = rows
                 .into_iter()
                 .partition(|(_, row)| lookup(row, &r.field).is_some());
             present.sort_by(|a, b| {
-                let o = sort_key(lookup(&a.1, &r.field).unwrap())
-                    .cmp(&sort_key(lookup(&b.1, &r.field).unwrap()));
+                let (x, y) = (
+                    lookup(&a.1, &r.field).unwrap(),
+                    lookup(&b.1, &r.field).unwrap(),
+                );
+                let o = match (instant, x, y) {
+                    (true, Node::Text(x), Node::Text(y)) => match (
+                        Rfc3339Instant::parse_rfc3339(x),
+                        Rfc3339Instant::parse_rfc3339(y),
+                    ) {
+                        (Some(x), Some(y)) => x.cmp(&y),
+                        _ => {
+                            sort_key(&Node::Text(x.clone())).cmp(&sort_key(&Node::Text(y.clone())))
+                        }
+                    },
+                    _ => sort_key(x).cmp(&sort_key(y)),
+                };
                 if desc {
                     o.reverse()
                 } else {
@@ -1793,17 +1821,20 @@ impl<'ir> Engine<'ir> {
                 .world
                 .inst
                 .get(&entity.to_string())
-                .and_then(|h| h.get(key))
+                .and_then(|h| h.get(&key_of(key)))
                 .map(|i| i.id.clone())
                 .or_else(|| {
-                    s.events
-                        .iter()
-                        .find_map(|ev| ev.payload.values().find(|v| key_of(v) == key).cloned())
+                    s.events.iter().find_map(|ev| {
+                        ev.payload
+                            .values()
+                            .find(|v| key_of(v) == key_of(key))
+                            .cloned()
+                    })
                 })
-                .unwrap_or_else(|| Node::Text(key.to_owned()));
+                .unwrap_or_else(|| key.clone());
             let _ = e;
             world.inst.entry(entity.to_string()).or_default().insert(
-                key.to_owned(),
+                key_of(key),
                 Inst {
                     id,
                     state: inst.state.to_string(),

@@ -1,10 +1,11 @@
 {
   "provenance": {
-    "suite_version": "ess-conformance/16",
+    "suite_version": "ess-conformance/34",
     "system": "tally",
     "specification_version": "v1",
     "spec_digest": "7e9745cf1af7d1bd7de798a1971e78fc976c5c90ce52c7cff0892076505664e8",
-    "contract_digest": "6e9b0031bea18c464863d69c3969ce8b5a57cd4bd7d7ca177f3dfbb879380958"
+    "contract_digest": "6e9b0031bea18c464863d69c3969ce8b5a57cd4bd7d7ca177f3dfbb879380958",
+    "scenario_initial_state": "empty"
   },
   "scenarios": {
     "tally.board.BumpCounter/outcome/bumped": {
@@ -58,8 +59,14 @@
           }
         },
         {
-          "step": "expect_event",
+          "step": "expect_event_values",
           "event": "tally.board.CounterBumped",
+          "payload": {
+            "counter_id": {
+              "kind": "instance",
+              "instance": "counter"
+            }
+          },
           "shape": {
             "counter_id": {
               "holds": "primitive",

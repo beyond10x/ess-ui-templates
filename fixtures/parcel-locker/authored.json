@@ -1,10 +1,11 @@
 {
   "provenance": {
-    "suite_version": "ess-conformance/4",
+    "suite_version": "ess-conformance/34",
     "system": "parcels",
     "specification_version": "v1",
     "spec_digest": "de386016f80804ae1452830b2e4cc5845072d46534d6267c3d0b5339c542f31d",
-    "contract_digest": "e66d51b5ba09ac1c8f9144562135d98d4b796a0b305806647b60949d5ef6d9bd"
+    "contract_digest": "e66d51b5ba09ac1c8f9144562135d98d4b796a0b305806647b60949d5ef6d9bd",
+    "scenario_initial_state": "empty"
   },
   "scenarios": {
     "parcels.locker/authored/adv-absent-flag": {
@@ -856,7 +857,7 @@
       ]
     },
     "parcels.locker/authored/left-open": {
-      "purpose": "An accepting express guard that holds on a closed locker overlaps the closed-locker refusal; the model leaves the answer open, so an implementation may give either.",
+      "purpose": "An accepting express guard that holds on a closed locker overlaps the closed-locker refusal; the express branch, declared first, answers both deposits.",
       "steps": [
         {
           "step": "execute_command",
@@ -950,7 +951,7 @@
           "step": "expect_outcome",
           "outcome": {
             "command": "parcels.locker.DepositParcel",
-            "outcome": "locker-closed"
+            "outcome": "express"
           }
         },
         {
@@ -1012,13 +1013,6 @@
           "name": {
             "command": "parcels.locker.DepositParcel",
             "outcome": "express"
-          }
-        },
-        {
-          "kind": "outcome",
-          "name": {
-            "command": "parcels.locker.DepositParcel",
-            "outcome": "locker-closed"
           }
         },
         {
@@ -2464,7 +2458,7 @@
       ]
     },
     "parcels.locker/authored/two-related": {
-      "purpose": "Two closed-locker refusals hold on the same locker; the model leaves the answer open, so an implementation may give either.",
+      "purpose": "Two closed-locker refusals hold on the same locker; the first declared, locker-closed, answers both drops.",
       "steps": [
         {
           "step": "execute_command",
@@ -2584,7 +2578,7 @@
           "step": "expect_outcome",
           "outcome": {
             "command": "parcels.locker.DropParcel",
-            "outcome": "locker-shut"
+            "outcome": "locker-closed"
           }
         },
         {
@@ -2657,13 +2651,6 @@
           "name": {
             "command": "parcels.locker.DropParcel",
             "outcome": "locker-closed"
-          }
-        },
-        {
-          "kind": "outcome",
-          "name": {
-            "command": "parcels.locker.DropParcel",
-            "outcome": "locker-shut"
           }
         },
         {

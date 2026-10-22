@@ -1,0 +1,73 @@
+# An authored scenario: what the specification cannot oblige, written down by a person.
+#
+# `OutstandingInvoices` ranks by `issued_at desc`, and `issued_at` is the instant the caller sends,
+# so the invoice issued last need not be the latest. Here the later instant is issued first, and
+# the earlier one is spelled with an offset and a fraction: `10:30:00.250+02:00` is 08:30:00.25Z,
+# before `09:00:00Z`, and its text is the greater. A target that ranks by the order it was sent the
+# invoices, or by the text of `issued_at`, puts `earlier` first and fails both assertions.
+type: ess-scenario/1
+domain: billing.invoice
+scenario: outstanding-invoices-rank-by-instant
+summary: OutstandingInvoices ranks by the instant issued_at names, not by issue order or its text.
+
+arrange:
+  - instance: later
+    entity: billing.invoice.Invoice
+  - instance: earlier
+    entity: billing.invoice.Invoice
+
+timeline:
+  - at: 2026-01-06T09:00:00Z
+    command: billing.invoice.CreateInvoice
+    actor: billing.invoice.Customer
+    input:
+      account_id: 3f1d5b7e-0000-4000-8000-000000000002
+      customer_email: later@example.test
+      amount: {amount: 340, currency: EUR}
+    outcome: accepted
+    events:
+      - event: billing.invoice.InvoiceCreated
+        payload:
+          customer_email: later@example.test
+    capture: {instance: later, event: billing.invoice.InvoiceCreated, field: invoice_id}
+
+  - at: 2026-01-06T09:00:01Z
+    command: billing.invoice.IssueInvoice
+    input:
+      invoice_id: {$instance: later}
+      issued_at: 2026-01-06T09:00:00Z
+    outcome: issued
+
+  - at: 2026-01-06T09:00:02Z
+    command: billing.invoice.CreateInvoice
+    actor: billing.invoice.Customer
+    input:
+      account_id: 3f1d5b7e-0000-4000-8000-000000000002
+      customer_email: earlier@example.test
+      amount: {amount: 120, currency: EUR}
+    outcome: accepted
+    events:
+      - event: billing.invoice.InvoiceCreated
+        payload:
+          customer_email: earlier@example.test
+    capture: {instance: earlier, event: billing.invoice.InvoiceCreated, field: invoice_id}
+
+  - at: 2026-01-06T09:00:03Z
+    command: billing.invoice.IssueInvoice
+    input:
+      invoice_id: {$instance: earlier}
+      issued_at: 2026-01-06T10:30:00.250+02:00
+    outcome: issued
+
+assert:
+  - view: billing.invoice.OutstandingInvoices
+    at:
+      row: first
+      fields:
+        invoice_id: {$instance: later}
+
+  - view: billing.invoice.OutstandingInvoices
+    at:
+      row: last
+      fields:
+        invoice_id: {$instance: earlier}
