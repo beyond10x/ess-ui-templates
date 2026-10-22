@@ -242,8 +242,8 @@ commands:
         #
         # `invoice_id` has no line here for the reason it has none above: the identity is the
         # implementation's to assign. `issued_at` has none because `CreateInvoice` is not what
-        # sets it and `IssueInvoice` does not take it — a clock is not an input, and the model says
-        # so by staying quiet rather than by naming a source that does not exist.
+        # sets it: a draft has not been issued, and `IssueInvoice` below is what records the
+        # instant.
         #
         # `reminder_count` starts at zero, and says so, because the invariant `reminder_count >= 0`
         # reads it: a required field no creating branch sets holds whatever the implementation
@@ -268,14 +268,22 @@ commands:
       wire: issue-invoice
       display: Issue invoice
 
+    # The issuing instant is part of the request. A clock is not an input: nothing in the model
+    # reads one, and an implementation that stamped the invoice from its own would make the order
+    # of `OutstandingInvoices` a fact about how fast it ran. The caller states when the invoice is
+    # issued, the outcome records it, and a scenario can then say which invoice ranks first.
     input:
       - name: invoice_id
         type: billing.invoice.InvoiceId
+      - name: issued_at
+        type: Timestamp
 
     outcomes:
       - name: issued
         moves: billing.invoice.Invoice.issue
         instance: invoice_id
+        sets:
+          issued_at: input.issued_at
         emits:
           - billing.invoice.InvoiceIssued
         # The event announces the invoice the caller named, and this says so: `instance:` already

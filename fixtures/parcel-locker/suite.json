@@ -1,10 +1,11 @@
 {
   "provenance": {
-    "suite_version": "ess-conformance/26",
+    "suite_version": "ess-conformance/34",
     "system": "parcels",
     "specification_version": "v1",
     "spec_digest": "de386016f80804ae1452830b2e4cc5845072d46534d6267c3d0b5339c542f31d",
-    "contract_digest": "e66d51b5ba09ac1c8f9144562135d98d4b796a0b305806647b60949d5ef6d9bd"
+    "contract_digest": "e66d51b5ba09ac1c8f9144562135d98d4b796a0b305806647b60949d5ef6d9bd",
+    "scenario_initial_state": "empty"
   },
   "scenarios": {
     "parcels.locker.CloseLocker/grant/denied": {
@@ -175,8 +176,14 @@
           }
         },
         {
-          "step": "expect_event",
+          "step": "expect_event_values",
           "event": "parcels.locker.LockerClosed",
+          "payload": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker"
+            }
+          },
           "shape": {
             "locker_id": {
               "holds": "primitive",
@@ -652,8 +659,14 @@
           }
         },
         {
-          "step": "expect_event",
+          "step": "expect_event_values",
           "event": "parcels.locker.ParcelCollected",
+          "payload": {
+            "parcel_code": {
+              "kind": "instance",
+              "instance": "parcel"
+            }
+          },
           "shape": {
             "parcel_code": {
               "holds": "primitive",
@@ -809,6 +822,10 @@
         {
           "kind": "view",
           "name": "parcels.locker.Parcels"
+        },
+        {
+          "kind": "actor",
+          "name": "parcels.locker.Courier"
         },
         {
           "kind": "actor",
@@ -1279,6 +1296,10 @@
         },
         {
           "kind": "actor",
+          "name": "parcels.locker.Courier"
+        },
+        {
+          "kind": "actor",
           "name": "parcels.locker.Recipient"
         }
       ]
@@ -1474,6 +1495,208 @@
         }
       ]
     },
+    "parcels.locker.DepositParcel/outcome/bad-recipient": {
+      "purpose": "`parcels.locker.DepositParcel` answers `bad-recipient` for an input that satisfies that branch's guard",
+      "steps": [
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.InstallLocker",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "site": {
+              "kind": "literal",
+              "value": "site-138599"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "locker-138600",
+          "entity": "parcels.locker.Locker",
+          "event": "parcels.locker.LockerInstalled",
+          "field": "locker_id"
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.InstallLocker",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "site": {
+              "kind": "literal",
+              "value": "site-138600"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "locker-138601",
+          "entity": "parcels.locker.Locker",
+          "event": "parcels.locker.LockerInstalled",
+          "field": "locker_id"
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.InstallLocker",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "site": {
+              "kind": "literal",
+              "value": "site-138601"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "step": "capture_instance",
+          "instance": "locker-138602",
+          "entity": "parcels.locker.Locker",
+          "event": "parcels.locker.LockerInstalled",
+          "field": "locker_id"
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.DepositParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker-138601"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "parcel_code"
+            },
+            "recipient": {
+              "kind": "literal",
+              "value": "nobody"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.DepositParcel",
+            "outcome": "bad-recipient"
+          }
+        },
+        {
+          "step": "expect_error",
+          "error": "parcels.locker.UnknownRecipient"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "parcels.locker.LockerClosed"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "parcels.locker.LockerInstalled"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "parcels.locker.ParcelCollected"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "parcels.locker.ParcelDeposited"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "parcels.locker.ParcelDiscarded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "parcels.locker.ParcelNoted"
+        }
+      ],
+      "source": [
+        {
+          "kind": "type",
+          "name": "parcels.locker.LockerId"
+        },
+        {
+          "kind": "type",
+          "name": "parcels.locker.ParcelCode"
+        },
+        {
+          "kind": "entity",
+          "name": "parcels.locker.Locker"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.DepositParcel"
+        },
+        {
+          "kind": "command",
+          "name": "parcels.locker.InstallLocker"
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.DepositParcel",
+            "outcome": "bad-recipient"
+          }
+        },
+        {
+          "kind": "outcome",
+          "name": {
+            "command": "parcels.locker.InstallLocker",
+            "outcome": "installed"
+          }
+        },
+        {
+          "kind": "event",
+          "name": "parcels.locker.LockerClosed"
+        },
+        {
+          "kind": "event",
+          "name": "parcels.locker.LockerInstalled"
+        },
+        {
+          "kind": "event",
+          "name": "parcels.locker.ParcelCollected"
+        },
+        {
+          "kind": "event",
+          "name": "parcels.locker.ParcelDeposited"
+        },
+        {
+          "kind": "event",
+          "name": "parcels.locker.ParcelDiscarded"
+        },
+        {
+          "kind": "event",
+          "name": "parcels.locker.ParcelNoted"
+        },
+        {
+          "kind": "error",
+          "name": "parcels.locker.UnknownRecipient"
+        },
+        {
+          "kind": "actor",
+          "name": "parcels.locker.Courier"
+        }
+      ]
+    },
     "parcels.locker.DepositParcel/outcome/deposited": {
       "purpose": "`parcels.locker.DepositParcel` answers `deposited` for an input no other branch's guard claims",
       "steps": [
@@ -1625,10 +1848,17 @@
           "step": "expect_no_error"
         },
         {
-          "step": "expect_event",
+          "step": "expect_event_values",
           "event": "parcels.locker.ParcelDeposited",
           "payload": {
-            "parcel_code": "parcel_code"
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker-138601"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "parcel_code"
+            }
           },
           "shape": {
             "locker_id": {
@@ -1919,10 +2149,17 @@
           "step": "expect_no_error"
         },
         {
-          "step": "expect_event",
+          "step": "expect_event_values",
           "event": "parcels.locker.ParcelDeposited",
           "payload": {
-            "parcel_code": "parcel_code"
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker-138601"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "parcel_code"
+            }
           },
           "shape": {
             "locker_id": {
@@ -2605,8 +2842,14 @@
           }
         },
         {
-          "step": "expect_event",
+          "step": "expect_event_values",
           "event": "parcels.locker.ParcelDiscarded",
+          "payload": {
+            "parcel_code": {
+              "kind": "instance",
+              "instance": "parcel"
+            }
+          },
           "shape": {
             "parcel_code": {
               "holds": "primitive",
@@ -3185,10 +3428,17 @@
           "step": "expect_no_error"
         },
         {
-          "step": "expect_event",
+          "step": "expect_event_values",
           "event": "parcels.locker.ParcelDeposited",
           "payload": {
-            "parcel_code": "parcel_code"
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker-138601"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "parcel_code"
+            }
           },
           "shape": {
             "locker_id": {
@@ -4137,8 +4387,14 @@
           "step": "expect_no_error"
         },
         {
-          "step": "expect_event",
+          "step": "expect_event_values",
           "event": "parcels.locker.ParcelNoted",
+          "payload": {
+            "parcel_code": {
+              "kind": "instance",
+              "instance": "parcel"
+            }
+          },
           "shape": {
             "parcel_code": {
               "holds": "primitive",
@@ -4345,6 +4601,56 @@
             "flag": {
               "kind": "literal",
               "value": "flag"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "parcel_code-1048576"
+            }
+          }
+        },
+        {
+          "step": "expect_outcome",
+          "outcome": {
+            "command": "parcels.locker.FlagParcel",
+            "outcome": "no-such-parcel"
+          }
+        },
+        {
+          "step": "expect_error",
+          "error": "parcels.locker.NoSuchParcel"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "parcels.locker.LockerClosed"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "parcels.locker.LockerInstalled"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "parcels.locker.ParcelCollected"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "parcels.locker.ParcelDeposited"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "parcels.locker.ParcelDiscarded"
+        },
+        {
+          "step": "expect_no_event",
+          "event": "parcels.locker.ParcelNoted"
+        },
+        {
+          "step": "execute_command",
+          "command": "parcels.locker.FlagParcel",
+          "actor": "parcels.locker.Courier",
+          "input": {
+            "flag": {
+              "kind": "literal",
+              "value": "urgent"
             },
             "parcel_code": {
               "kind": "literal",
@@ -5386,8 +5692,14 @@
           }
         },
         {
-          "step": "expect_event",
+          "step": "expect_event_values",
           "event": "parcels.locker.ParcelNoted",
+          "payload": {
+            "parcel_code": {
+              "kind": "instance",
+              "instance": "parcel"
+            }
+          },
           "shape": {
             "parcel_code": {
               "holds": "primitive",
@@ -5892,6 +6204,10 @@
         {
           "kind": "view",
           "name": "parcels.locker.Parcels"
+        },
+        {
+          "kind": "actor",
+          "name": "parcels.locker.Courier"
         },
         {
           "kind": "actor",
@@ -6570,8 +6886,14 @@
           }
         },
         {
-          "step": "expect_event",
+          "step": "expect_event_values",
           "event": "parcels.locker.ParcelCollected",
+          "payload": {
+            "parcel_code": {
+              "kind": "instance",
+              "instance": "parcel"
+            }
+          },
           "shape": {
             "parcel_code": {
               "holds": "primitive",
@@ -6727,6 +7049,10 @@
         {
           "kind": "view",
           "name": "parcels.locker.Parcels"
+        },
+        {
+          "kind": "actor",
+          "name": "parcels.locker.Courier"
         },
         {
           "kind": "actor",
@@ -7531,10 +7857,17 @@
           "step": "expect_no_error"
         },
         {
-          "step": "expect_event",
+          "step": "expect_event_values",
           "event": "parcels.locker.ParcelDeposited",
           "payload": {
-            "parcel_code": "parcel_code"
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker-138601"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "parcel_code"
+            }
           },
           "shape": {
             "locker_id": {
@@ -9463,10 +9796,17 @@
           "step": "expect_no_error"
         },
         {
-          "step": "expect_event",
+          "step": "expect_event_values",
           "event": "parcels.locker.ParcelDeposited",
           "payload": {
-            "parcel_code": "parcel_code"
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker-138601"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "parcel_code"
+            }
           },
           "shape": {
             "locker_id": {
@@ -10617,10 +10957,17 @@
           "step": "expect_no_error"
         },
         {
-          "step": "expect_event",
+          "step": "expect_event_values",
           "event": "parcels.locker.ParcelDeposited",
           "payload": {
-            "parcel_code": "parcel_code"
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker-138601"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "parcel_code"
+            }
           },
           "shape": {
             "locker_id": {
@@ -10936,10 +11283,17 @@
           "step": "expect_no_error"
         },
         {
-          "step": "expect_event",
+          "step": "expect_event_values",
           "event": "parcels.locker.ParcelDeposited",
           "payload": {
-            "parcel_code": "parcel_code"
+            "locker_id": {
+              "kind": "instance",
+              "instance": "locker-138601"
+            },
+            "parcel_code": {
+              "kind": "literal",
+              "value": "parcel_code"
+            }
           },
           "shape": {
             "locker_id": {
@@ -11565,8 +11919,14 @@
           }
         },
         {
-          "step": "expect_event",
+          "step": "expect_event_values",
           "event": "parcels.locker.ParcelNoted",
+          "payload": {
+            "parcel_code": {
+              "kind": "instance",
+              "instance": "parcel"
+            }
+          },
           "shape": {
             "parcel_code": {
               "holds": "primitive",
@@ -11878,8 +12238,14 @@
           }
         },
         {
-          "step": "expect_event",
+          "step": "expect_event_values",
           "event": "parcels.locker.ParcelNoted",
+          "payload": {
+            "parcel_code": {
+              "kind": "instance",
+              "instance": "parcel"
+            }
+          },
           "shape": {
             "parcel_code": {
               "holds": "primitive",
@@ -13085,8 +13451,14 @@
           }
         },
         {
-          "step": "expect_event",
+          "step": "expect_event_values",
           "event": "parcels.locker.ParcelNoted",
+          "payload": {
+            "parcel_code": {
+              "kind": "instance",
+              "instance": "parcel"
+            }
+          },
           "shape": {
             "parcel_code": {
               "holds": "primitive",

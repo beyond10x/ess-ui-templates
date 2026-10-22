@@ -21,7 +21,8 @@ arrange:
     entity: billing.invoice.Invoice
 
 # The instants order the file and reach no runner. What they buy is that moving two of these blocks
-# is refused rather than silently meaning something else.
+# is refused rather than silently meaning something else. The ranking reads the `issued_at` each
+# `IssueInvoice` step sends, which its `issued` outcome records on the invoice.
 timeline:
   - at: 2026-01-05T09:00:00Z
     command: billing.invoice.CreateInvoice
@@ -42,6 +43,7 @@ timeline:
     command: billing.invoice.IssueInvoice
     input:
       invoice_id: {$instance: earlier}
+      issued_at: 2026-01-05T09:00:01Z
     outcome: issued
 
   - at: 2026-01-05T09:00:02Z
@@ -62,6 +64,7 @@ timeline:
     command: billing.invoice.IssueInvoice
     input:
       invoice_id: {$instance: later}
+      issued_at: 2026-01-05T09:00:03Z
     outcome: issued
 
 # The order the position is relative to is the view's own `order_by:`, filled in by the compiler.

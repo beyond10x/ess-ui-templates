@@ -838,6 +838,14 @@
             "name": "billing.invoice.InvoiceId"
           },
           "naming": {}
+        },
+        {
+          "name": "issued_at",
+          "type_ref": {
+            "kind": "primitive",
+            "name": "timestamp"
+          },
+          "naming": {}
         }
       ],
       "outcomes": [
@@ -894,7 +902,27 @@
               ]
             }
           ],
-          "summary": "The invoice leaves Draft and is now Issued."
+          "summary": "The invoice leaves Draft and is now Issued.",
+          "sets": [
+            {
+              "target": "issued_at",
+              "target_type": {
+                "kind": "optional",
+                "of": {
+                  "kind": "primitive",
+                  "name": "timestamp"
+                }
+              },
+              "value": {
+                "kind": "input_field",
+                "field": "issued_at",
+                "type_ref": {
+                  "kind": "primitive",
+                  "name": "timestamp"
+                }
+              }
+            }
+          ]
         },
         {
           "name": "wrong-state",

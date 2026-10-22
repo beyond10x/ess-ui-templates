@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use ess_compiler::EssIr;
 use ess_conformance::interpret::execute as ess;
 use ess_primitives::node::Node;
-use ess_ui::interp::{By, Engine, Fields, Interp};
+use ess_ui::interp::{key_of, By, Engine, Fields, Interp};
 use serde_json::{json, Value};
 
 fn fixture(name: &str) -> PathBuf {
@@ -104,7 +104,7 @@ fn billing_scenario_plays_back_as_ess_executes_it() {
         let cmd = &commands[rec.command.as_deref().unwrap()];
         let before: BTreeMap<String, String> = store
             .instances()
-            .map(|(_, k, i)| (k.to_owned(), i.state.to_string()))
+            .map(|(_, k, i)| (key_of(k), i.state.to_string()))
             .collect();
         let mut steps = ess::execute(&ir, &store, cmd, &inp, &ess::Externals::Withheld).unwrap();
         assert_eq!(steps.len(), 1);
@@ -154,7 +154,7 @@ fn billing_scenario_plays_back_as_ess_executes_it() {
         let after: BTreeMap<String, String> = step
             .next
             .instances()
-            .map(|(_, k, i)| (k.to_owned(), i.state.to_string()))
+            .map(|(_, k, i)| (key_of(k), i.state.to_string()))
             .collect();
         let page_states: BTreeMap<String, String> = rec
             .world
@@ -235,10 +235,12 @@ fn engine(ir: &EssIr) -> (Interp<'_>, ()) {
     (Interp::new(ir), ())
 }
 
-fn gap(e: &Engine<'_>, cmd: &str, inp: &Fields) -> String {
+/// ESS 0.67.0 executes what these tests once showed it refusing: it answers `cmd` with one step.
+fn ess_executes(e: &Engine<'_>, cmd: &str, inp: &Fields) {
     match e.ask_ess_raw(cmd, inp) {
-        Some(Err(why)) => why,
-        Some(Ok(n)) => panic!("ESS determines {cmd} ({n} step(s)); this is not an extension"),
+        Some(Ok(1)) => {}
+        Some(Ok(n)) => panic!("ESS determines {cmd} with {n} step(s), not one"),
+        Some(Err(why)) => panic!("ESS refuses {cmd}: {why}"),
         None => panic!("ESS no longer holds the store"),
     }
 }
@@ -262,7 +264,7 @@ fn existing_instance_refuses_an_identity_already_held() {
     let mut e = Engine::new(&interp);
     let locker = install(&mut e);
     let inp = input(json!({"parcel_code": "PX-1", "locker_id": locker, "recipient": "Ada"}));
-    assert!(gap(&e, "parcels.locker.DepositParcel", &inp).contains("existing-instance"));
+    ess_executes(&e, "parcels.locker.DepositParcel", &inp);
     assert_eq!(
         e.execute("parcels.locker.DepositParcel", &inp, None, None)
             .unwrap()
@@ -296,7 +298,7 @@ fn creation_takes_the_identity_the_caller_supplies() {
             None,
         )
         .unwrap();
-    assert_eq!(s.by, By::Page);
+    assert_eq!(s.by, By::Ess);
     assert!(e.world.inst["parcels.locker.Parcel"].contains_key("PX-7"));
     assert_eq!(
         e.world.inst["parcels.locker.Parcel"]["PX-7"].state,
@@ -328,7 +330,7 @@ fn related_row_predicate_and_its_absence_are_read() {
     )
     .unwrap();
     let inp = input(json!({"parcel_code": "PX-2", "locker_id": locker, "recipient": "Ada"}));
-    assert!(gap(&e, "parcels.locker.ReserveParcel", &inp).contains("related row"));
+    ess_executes(&e, "parcels.locker.ReserveParcel", &inp);
     let s = e
         .execute("parcels.locker.ReserveParcel", &inp, None, None)
         .unwrap();
@@ -345,7 +347,7 @@ fn related_row_predicate_and_its_absence_are_read() {
 }
 
 #[test]
-fn two_branches_that_hold_leave_the_step_open_first_declared_shown() {
+fn two_branches_that_hold_answer_the_first_declared() {
     let ir = model("parcel-locker");
     let (interp, ()) = engine(&ir);
     let mut e = Engine::new(&interp);
@@ -358,8 +360,8 @@ fn two_branches_that_hold_leave_the_step_open_first_declared_shown() {
             None,
         )
         .unwrap();
-    let open: Vec<_> = s.open.iter().map(|(o, _)| o.clone().unwrap()).collect();
-    assert_eq!(open, ["rush-a", "rush-b"]);
+    assert!(s.open.is_empty(), "{:?}", s.open);
+    assert_eq!(s.by, By::Ess);
     assert_eq!(s.outcome.as_deref(), Some("rush-a"));
 }
 
@@ -467,10 +469,7 @@ fn a_string_identity_is_minted_and_skips_one_already_held() {
         )
         .unwrap();
     let code = text(&s.events[0].payload["parcel_code"]);
-    assert!(
-        code.starts_with("00000000-0000-4000-8000-") && code != held,
-        "{code}"
-    );
+    assert!(code.starts_with("generated-") && code != held, "{code}");
     assert_eq!(e.world.inst["parcels.locker.Parcel"].len(), 2);
 }
 
@@ -480,7 +479,7 @@ fn an_integer_identity_is_minted() {
     let (interp, ()) = engine(&ir);
     let mut e = Engine::new(&interp);
     let inp = input(json!({"text": "Restock"}));
-    assert!(gap(&e, "tally.board.PinNote", &inp).contains("mint"));
+    ess_executes(&e, "tally.board.PinNote", &inp);
     let s = e.execute("tally.board.PinNote", &inp, None, None).unwrap();
     assert!(
         matches!(s.events[0].payload["note_no"], Node::Number(_)),
@@ -507,7 +506,7 @@ fn increment_adds_to_the_held_value_and_views_aggregate_and_rank() {
         ids.push(s.events[0].payload["counter_id"].clone());
     }
     let bump = input(json!({"counter_id": ids[1]}));
-    assert!(gap(&e, "tally.board.BumpCounter", &bump).contains("previous value plus"));
+    ess_executes(&e, "tally.board.BumpCounter", &bump);
     e.execute("tally.board.BumpCounter", &bump, None, None)
         .unwrap();
     e.execute("tally.board.BumpCounter", &bump, None, None)
