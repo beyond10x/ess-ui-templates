@@ -6,7 +6,7 @@ env:
 vars:
   BIN: '{{.CARGO_TARGET_DIR | default "target"}}/debug/ess-ui'
   SCREENS: '{{.SCREENS | default (printf "%s/.cache/b10x-design/ess-ui-screens" .HOME)}}'
-  DOCS_SYSTEM_PIN: acbc7a39a2a495114a507a92e0a0c4c933e81d8f
+  DOCS_SYSTEM_PIN: 5fd348a9e49a96832f70af7917e6cd2db2c32abe
   FONT_FILES: inter-variable-latin.woff2 fira-code-regular-latin.woff2 fira-code-semibold-latin.woff2 OFL-Inter.txt OFL-FiraCode.txt
   BILLING_REPO: --repo-url https://github.com/beyond10x/ess --repo-label GitHub --spec-root examples/billing --ref 4d6a4ecafc0feb4e11e4bee777b19c7351fa3647
 
@@ -86,7 +86,7 @@ tasks:
       - for: {var: FONT_FILES}
         cmd: git -C "${DOCS_SYSTEM:-out/docs-system}" show {{.DOCS_SYSTEM_PIN}}:styles/static/b10x-fonts/{{.ITEM}} | cmp - web/fonts/{{.ITEM}}
       - |
-        git -C "${DOCS_SYSTEM:-out/docs-system}" show {{.DOCS_SYSTEM_PIN}}:src/product-site.ts | sed -n "s/^const FONT_RANGE = '\(.*\)';$/\1/p" > out/font-range.pinned.txt
+        git -C "${DOCS_SYSTEM:-out/docs-system}" show {{.DOCS_SYSTEM_PIN}}:src/product-site.ts | sed -n "s/^const FONT_RANGE *= *'\(.*\)';$/\1/p" > out/font-range.pinned.txt
       - test -s out/font-range.pinned.txt
       - |
         sed -n 's/^    pub const FONT_RANGE: &str = "\(.*\)";$/\1/p' crates/ess-ui/src/page.rs | diff - out/font-range.pinned.txt
