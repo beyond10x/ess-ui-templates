@@ -1,4 +1,4 @@
-warning: fixtures/parcel-locker/spec/ess-inputs.yaml requires ess 0.48.0 and this is ess 0.67.0, which is newer; continuing (--strict-requires refuses)
+warning: fixtures/parcel-locker/spec/ess-inputs.yaml requires ess 0.48.0 and this is ess 0.68.0, which is newer; continuing (--strict-requires refuses)
 refused: refusal[ESS-SYNTH-003]: outcome parcels.locker.DropParcel/locker-closed has no scenario `parcels.locker.DropParcel/outcome/locker-closed`
   no candidate of the 2 tried satisfies ``parcels.locker.Locker` stored related row selecting this branch, over the rows 2 bounded arrangements left`
   help: write the branch's condition over values a candidate can carry, or supply a fixture for it

@@ -303,7 +303,7 @@ impl<'ir> Interp<'ir> {
     }
 
     /// A new instance's identity the model leaves to the implementation: a Uuid as ESS mints it,
-    /// a String as `generated-<n>` and an Integer as 1 + n, as ESS 0.67.0 mints them. A value
+    /// a String as `generated-<n>` and an Integer as 1 + n, as ESS 0.68.0 mints them. A value
     /// already held is skipped; a type whose newtypes carry invariants is not minted.
     fn mint_identity(&self, t: &ResolvedTypeRef, w: &mut World, held: &[String]) -> Option<Node> {
         if t.is_optional() {
@@ -328,7 +328,7 @@ impl<'ir> Interp<'ir> {
             Rep::Prim(p @ (Primitive::Uuid | Primitive::String | Primitive::Integer)) => p,
             _ => return None,
         };
-        // Workaround for ESS 0.67.0: its interpreter mints these values itself, but its minting
+        // Workaround for ESS 0.68.0: its interpreter mints these values itself, but its minting
         // (`interpret::execute::minted`, `witness::fields`) is not public, so the page repeats its
         // shapes to stay in lockstep: the Uuid text, `generated-<n>`, and 1 + n.
         loop {
@@ -1312,7 +1312,7 @@ impl<'ir> Interp<'ir> {
         }
         for r in v.order_by.iter().rev() {
             let desc = r.direction == Direction::Descending;
-            // A `Timestamp` ranks by its instant, as ESS 0.67.0's interpreted views rank it.
+            // A `Timestamp` ranks by its instant, as ESS 0.68.0's interpreted views rank it.
             let instant = v.fields.iter().any(|f| {
                 f.name == r.field
                     && matches!(self.rep(&f.type_ref), Rep::Prim(Primitive::Timestamp))
