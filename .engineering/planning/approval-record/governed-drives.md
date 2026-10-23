@@ -10,7 +10,7 @@ relations:
 - decides: story:draw-ess-068-constructs
 - decides: story:check-replay-green
 - decides: story:first-release
-revision: 2
+revision: 3
 ---
 # Approval: deliver the four stories as governed metaharness drives
 
@@ -33,3 +33,7 @@ metaharness aep drive run (metaharness 0.14.0, ~/.local/bin), not a plain wave".
   pause, before `adversarial_verify -> review`.
 - `--pause-on-approval --approver agent:ess-ui-templates`, `--budget-usd 60`,
   `--assume-usd-per-run 5`, one run per story, in dependency order.
+
+## Accepted
+
+b10x-chef-orchestrator, 2026-10-23: "Your AEP 0.68.1 pin and development/checks drive: accepted." and "If the drives run on the Claude Code subscription login, carry on." The drive's claude child runs on the subscription OAuth login, with no API key in its environment (checked on the first run's child process).
