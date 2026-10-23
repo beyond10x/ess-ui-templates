@@ -2,7 +2,7 @@ version: aep.project/5
 
 protocol: adp/1
 profile: development.standard
-protocols: git+https://github.com/beyond10x/aep#4d22c9031b2cb24cfb3bf8ce1473c0856954ff64
+protocols: git+https://github.com/beyond10x/aep#2481b48395afbaea9ad9b6165dbc0a80b80e1c01
 planning_scope: "ess-ui-templates"
 store:
   git: {}
