@@ -24,5 +24,5 @@ constraints:
       the outcome open, with a test in tests/playback.rs showing ESS refusing it. A failure ESS
       causes is reported as an ESS gap, not patched here.
     - >-
-      Cargo builds and tests run through b10x-build-slot with CARGO_INCREMENTAL=0 and
+      Cargo runs directly with CARGO_INCREMENTAL=0 and
       CARGO_PROFILE_DEV_DEBUG=line-tables-only.
