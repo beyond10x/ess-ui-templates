@@ -2,7 +2,7 @@
 format: aep.planning-md/3
 id: story:ess-068-crates
 kind: story
-status: proposed
+status: implemented
 title: Move the ESS crates and fixtures to ESS 0.68.0
 summary: Pin the four ESS crates and the fixture compiler to ESS 0.68.0 and keep task check green
 tags:
@@ -19,9 +19,11 @@ scope:
   path: Taskfile.yml
 - confidence: cited
   path: fixtures/
-revision: 4
+revision: 6
 transitions:
 - {from: "draft", to: "proposed", at: "2026-10-23T13:51:07Z", actor: "human:timo", revision: 3}
+- {from: "proposed", to: "active", at: "2026-10-23T20:04:35Z", actor: "human:timo", revision: 5}
+- {from: "active", to: "implemented", at: "2026-10-23T20:05:44Z", actor: "human:timo", revision: 6, decided_on: {"recorded":{"test_result":1}}}
 ---
 # Story: Move the ESS crates and fixtures to ESS 0.68.0
 

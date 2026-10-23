@@ -20,5 +20,5 @@ constraints:
       Every GitHub write (push, tag, release) goes through b10x-gates as b10x-bot[bot], never gh.
       Workflow actions are pinned by commit. Release notes pass b10x-gates scan-text.
     - >-
-      Cargo builds and tests run through b10x-build-slot with CARGO_INCREMENTAL=0 and
+      Cargo runs directly with CARGO_INCREMENTAL=0 and
       CARGO_PROFILE_DEV_DEBUG=line-tables-only.

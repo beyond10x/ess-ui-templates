@@ -19,5 +19,5 @@ constraints:
       Follow AGENTS.md: Rust only, never write semantics ESS executes, run task schema after
       changing data types, no source-project names (task scan).
     - >-
-      Compile fixtures with an ess 0.68.0 binary. Cargo builds and tests run through
-      b10x-build-slot with CARGO_INCREMENTAL=0 and CARGO_PROFILE_DEV_DEBUG=line-tables-only.
+      Compile fixtures with an ess 0.68.0 binary. Cargo runs directly
+      with CARGO_INCREMENTAL=0 and CARGO_PROFILE_DEV_DEBUG=line-tables-only.

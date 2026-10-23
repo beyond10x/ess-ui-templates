@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-23T20:05:44Z",
+  "actor": "human:timo",
+  "artifact": "story:ess-068-crates",
+  "kind": "story",
+  "revision": 5,
+  "change": {
+    "change": "evidence",
+    "kind": "test_result",
+    "source": "task check exit 0 and .engineering/checks/story 7/7 exit 0 at fe7be68; merged in https://github.com/beyond10x/ess-ui-templates/pull/8 (9d31dbe)"
+  }
+}
