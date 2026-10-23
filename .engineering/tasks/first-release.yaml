@@ -1,0 +1,24 @@
+id: ess-ui-first-release
+kind: feature
+objective: first-release
+protocol: adp/1
+profile: development.standard
+
+derived_from:
+  - story:first-release
+
+constraints:
+  facts:
+    change.public_contract: true
+    change.architectural: false
+    change.code: true
+  notes:
+    - >-
+      The Acceptance section of .engineering/planning/story/first-release.md owns the outcome.
+      Starts after the other three stories are implemented.
+    - >-
+      Every GitHub write (push, tag, release) goes through b10x-gates as b10x-bot[bot], never gh.
+      Workflow actions are pinned by commit. Release notes pass b10x-gates scan-text.
+    - >-
+      Cargo builds and tests run through b10x-build-slot with CARGO_INCREMENTAL=0 and
+      CARGO_PROFILE_DEV_DEBUG=line-tables-only.

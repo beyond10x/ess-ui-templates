@@ -1,0 +1,28 @@
+id: ess-ui-check-replay-green
+kind: feature
+objective: check-replay-green
+protocol: adp/1
+profile: development.standard
+
+derived_from:
+  - story:check-replay-green
+
+constraints:
+  facts:
+    change.public_contract: false
+    change.architectural: false
+    change.code: true
+  notes:
+    - >-
+      The Acceptance section of .engineering/planning/story/check-replay-green.md owns the
+      outcome. Starts after story:ess-068-crates is implemented.
+    - >-
+      The repro under ~/.cache/ess-ui-repro is read-only input. No file and no text from it
+      enters the repository; fixtures are written fresh with neutral names.
+    - >-
+      Never write semantics ESS executes. Extend only where interpret::execute refuses or leaves
+      the outcome open, with a test in tests/playback.rs showing ESS refusing it. A failure ESS
+      causes is reported as an ESS gap, not patched here.
+    - >-
+      Cargo builds and tests run through b10x-build-slot with CARGO_INCREMENTAL=0 and
+      CARGO_PROFILE_DEV_DEBUG=line-tables-only.

@@ -1,0 +1,27 @@
+id: ess-ui-draw-ess-068-constructs
+kind: feature
+objective: draw-ess-068-constructs
+protocol: adp/1
+profile: development.standard
+
+derived_from:
+  - story:draw-ess-068-constructs
+
+constraints:
+  facts:
+    change.public_contract: true
+    change.architectural: false
+    change.code: true
+  notes:
+    - >-
+      The Acceptance section of .engineering/planning/story/draw-ess-068-constructs.md owns the
+      outcome. Starts after story:ess-068-crates is implemented.
+    - >-
+      The repro under ~/.cache/ess-ui-repro is read-only input. No file and no text from it
+      enters the repository; the fixture is written fresh with neutral names.
+    - >-
+      Follow AGENTS.md: Rust only, browser code JS/CSS, task schema after changing data types,
+      never edit docs-system tokens or fonts, no source-project names (task scan).
+    - >-
+      Cargo builds and tests run through b10x-build-slot with CARGO_INCREMENTAL=0 and
+      CARGO_PROFILE_DEV_DEBUG=line-tables-only.
