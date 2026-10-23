@@ -1,0 +1,10 @@
+version: aep.project/5
+
+protocol: adp/1
+profile: development.standard
+protocols: git+https://github.com/beyond10x/aep#4d22c9031b2cb24cfb3bf8ce1473c0856954ff64
+planning_scope: "ess-ui-templates"
+store:
+  git: {}
+summary: >-
+  ess-ui: renders an ESS specification as a page that executes its scenarios at build time

@@ -1,0 +1,23 @@
+id: ess-ui-ess-068-crates
+kind: feature
+objective: ess-068-crates
+protocol: adp/1
+profile: development.standard
+
+derived_from:
+  - story:ess-068-crates
+
+constraints:
+  facts:
+    change.public_contract: false
+    change.architectural: false
+    change.code: true
+  notes:
+    - >-
+      The Acceptance section of .engineering/planning/story/ess-068-crates.md owns the outcome.
+    - >-
+      Follow AGENTS.md: Rust only, never write semantics ESS executes, run task schema after
+      changing data types, no source-project names (task scan).
+    - >-
+      Compile fixtures with an ess 0.68.0 binary. Cargo builds and tests run through
+      b10x-build-slot with CARGO_INCREMENTAL=0 and CARGO_PROFILE_DEV_DEBUG=line-tables-only.
