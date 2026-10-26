@@ -235,7 +235,7 @@ fn engine(ir: &EssIr) -> (Interp<'_>, ()) {
     (Interp::new(ir), ())
 }
 
-/// ESS 0.68.0 executes what these tests once showed it refusing: it answers `cmd` with one step.
+/// ESS 0.69.2 executes what these tests once showed it refusing: it answers `cmd` with one step.
 fn ess_executes(e: &Engine<'_>, cmd: &str, inp: &Fields) {
     match e.ask_ess_raw(cmd, inp) {
         Some(Ok(1)) => {}
