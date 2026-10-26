@@ -8,7 +8,7 @@ vars:
   SCREENS: '{{.SCREENS | default (printf "%s/.cache/b10x-design/ess-ui-screens" .HOME)}}'
   DOCS_SYSTEM_PIN: 5fd348a9e49a96832f70af7917e6cd2db2c32abe
   FONT_FILES: inter-variable-latin.woff2 fira-code-regular-latin.woff2 fira-code-semibold-latin.woff2 OFL-Inter.txt OFL-FiraCode.txt
-  BILLING_REPO: --repo-url https://github.com/beyond10x/ess --repo-label GitHub --spec-root examples/billing --ref ae9d3604ec001b3f0f318e8d961748c388082f60
+  BILLING_REPO: --repo-url https://github.com/beyond10x/ess --repo-label GitHub --spec-root examples/billing --ref a3bc2df3df986e8d340553145e8615a00f982331
 
 tasks:
   build:
