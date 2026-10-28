@@ -57,7 +57,7 @@ pub fn typed_model(spec_dir: &Path, ir_text: &str) -> Result<ess_compiler::EssIr
 }
 
 /// The ESS release whose crates this build executes with.
-pub const ESS_PIN: &str = "ess 0.74.0 (085f893e833c39640aac5b283b1d1d389399976c)";
+pub const ESS_PIN: &str = "ess 0.75.0 (b593d3567cd03070d16d67b2a936f0b8c22c276f)";
 
 /// Bakes the simulation and builds the presentation.
 pub fn present(b: &Build) -> Result<(page::Presentation, sim::Baked)> {

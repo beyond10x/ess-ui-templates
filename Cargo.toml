@@ -11,10 +11,10 @@ repository = "https://github.com/beyond10x/ess-ui-templates"
 publish = false
 
 [workspace.dependencies]
-ess-primitives = { git = "https://github.com/beyond10x/ess", rev = "085f893e833c39640aac5b283b1d1d389399976c" }
-ess-domain = { git = "https://github.com/beyond10x/ess", rev = "085f893e833c39640aac5b283b1d1d389399976c" }
-ess-compiler = { git = "https://github.com/beyond10x/ess", rev = "085f893e833c39640aac5b283b1d1d389399976c" }
-ess-conformance = { git = "https://github.com/beyond10x/ess", rev = "085f893e833c39640aac5b283b1d1d389399976c" }
+ess-primitives = { git = "https://github.com/beyond10x/ess", rev = "b593d3567cd03070d16d67b2a936f0b8c22c276f" }
+ess-domain = { git = "https://github.com/beyond10x/ess", rev = "b593d3567cd03070d16d67b2a936f0b8c22c276f" }
+ess-compiler = { git = "https://github.com/beyond10x/ess", rev = "b593d3567cd03070d16d67b2a936f0b8c22c276f" }
+ess-conformance = { git = "https://github.com/beyond10x/ess", rev = "b593d3567cd03070d16d67b2a936f0b8c22c276f" }
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
