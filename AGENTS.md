@@ -21,7 +21,7 @@ own: opt-out recorded here, as the workspace rule asks.
 ## Rules
 
 - Running code is Rust with clap derive. Browser code stays JS/CSS. No Python.
-- ESS crates are a git dependency pinned to ESS 0.74.0 (`5556839c…`); fixtures are compiled with
+- ESS crates are a git dependency pinned to ESS 0.75.0 (`5556839c…`); fixtures are compiled with
   the same `ess` release. Moving the pin means `task fixtures` and the full `task check`.
 - Never write semantics ESS executes. Extend only where `interpret::execute` refuses
   (`NotInterpreted`, `NoValue`) or leaves the outcome open, and add a test in
