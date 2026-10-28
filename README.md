@@ -80,6 +80,6 @@ fonts against the pinned docs-system commit (fetched into `out/docs-system`, or 
 fonts from the pin. `task fixtures` recompiles the fixtures with the
 `ess` CLI; `task screenshots` writes headless-Chrome screenshots of the billing page.
 
-`fixtures/billing` is ESS's own `examples/billing` and `examples/billing-scenarios` at ESS 0.72.0.
+`fixtures/billing` is ESS's own `examples/billing` and `examples/billing-scenarios` at ESS 0.74.0.
 
 Licensed under Apache-2.0. Ported from an earlier internal prototype.
