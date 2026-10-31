@@ -46,6 +46,19 @@ the `at` view expectation. Not executed: set effects (`instances`, `affects`), `
 
 `task check` · `task page` · `task screenshots` · `task fixtures` · `task schema`
 
+## Releases
+
+A release is a source tag; there are no binaries, no registry publish and no release workflow.
+
+1. Add the `## [x.y.z] - YYYY-MM-DD` section to `CHANGELOG.md` (Keep a Changelog 1.1.0) from
+   `git log <last tag>..origin/main`. At 0.x: feat is a minor, fix, deps and docs a patch.
+2. Set the same version in `Cargo.toml` (`workspace.package`), `package.json` and `Cargo.lock`.
+3. One PR through the bot, merged through the App once `check` and `Shared source gates` are green.
+4. Tag the merge commit on `origin/main` with an annotated bare-version tag (`0.1.0`, no `v`),
+   pushed through `b10x-gates bot`, then create the GitHub Release for that tag through
+   `b10x-gates api` (notes: one or two lines and a link to the CHANGELOG section).
+5. `verify-release.sh ess-ui-templates <tag>` exits 0 once the runs on the tagged commit are green.
+
 ## Serves
 
 This repository advances these objectives from `atlas/ROADMAP.md`:
